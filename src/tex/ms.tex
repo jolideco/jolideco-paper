@@ -226,14 +226,28 @@
     simulated images of black hole ring structures.
 
     \subsubsection{Image Normalisation}
-    Astromomical images typically show a much higher dynamic range compared to 
-    natural images. This is mostly due to the existence of point sources, which rarely occur
-    in natural images, but a very common in astronomical images because of objects 
-    at hig distances.
+    Astronomical images typically show a much higher dynamic range compared to 
+    natural images. This is mostly due to the existence of real point sources, which rarely occur
+    in natural images, but a very common in astronomical images because of compact objects 
+    at high distances. The high dynamic range challenges any image reconstruction
+    algorithm. 
+    
     The GMM patch prior is learned on normalized images, where the intensity values
-    are constrained between 0 and 1. To evaluate For the likelihood term the image
-    intensity need to be conserved.
+    are constrained between 0 and 1. To evaluate the GMM patch prior on the 
+    model image $\mathbf{x}$ the pixel values of $\mathbf{x}$  need to be mapped 
+    in the same dynamic range between 0 and 1. 
 
+
+    \begin{figure}[ht!]
+        \script{image-norms.py}
+        \begin{centering}
+            \includegraphics[width=\linewidth]{figures/image-norms.pdf}
+            \caption{
+                Various image norms with different dynamic behaviour.
+            }
+            \label{fig:patches}
+        \end{centering}
+    \end{figure}
 
     The choice of the image normalisation allows to adjust the contrast of the image
     and e.g. enhance low intensity structures, which also enhances the regularising
