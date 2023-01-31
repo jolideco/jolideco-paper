@@ -87,7 +87,7 @@
     \subsection{Poisson Joint Likelihood}
     Our goal is to recover an image $\mathbf{x}$ from a set of multiple
     low counts observations.
-    Most generally we assume our total dataset consists of $M$ individual
+    Most generally we assume our total dataset consists of $J$ individual
     observations of the same region of the sky, which are jointly
     modelled. The assumption is that the underlying \textit{true} emission image,
     we are looking for does not change with time. Under this assumption these
@@ -101,30 +101,30 @@
         response functions. E.g., event classes for \fermi.
     \end{itemize}
 
-    Or a even an arbitrary combination of the possibilities listed above.
+    Or even an arbitrary combination of the possibilities listed above.
 
-    For each individual observation $m$ the predicted counts can be modelled by forward
+    For each individual observation $j$ the predicted counts can be modelled by forward
     folding the unknown flux image $\mathbf{x}$ with the individual (per observation) instrument response:
 
     \begin{equation}
         \label{eq:model}
-        \mathbf{\lambda}_m = \mathrm{PSF}_m \circledast \left(\mathbf{E}_m \cdot (\mathbf{x} + \mathbf{B}_m) \right)
+        \boldsymbol{\lambda}_j = \mathrm{PSF}_j \circledast \left(\mathbf{E}_j \cdot (\mathbf{x} + \mathbf{B}_j) \right)
     \end{equation}
 
-    Where the expected counts $\lambda_i$ are given by the convolution of the true underlying
-    flux distribution $\mathbf{x}$ with the $\mathrm{PSF}$. Additionally
-    the observation specific exposure $\mathbf{E}$ and background emission $\mathbf{B}$ can be
+    Where the expected counts $\lambda_j$ are given by the convolution of the unknown 
+    flux image $\mathbf{x}$ with the observation specific point spread function $\mathrm{PSF}_j$. Additionally
+    the observation specific exposure $\mathbf{E}_j$ and background emission $\mathbf{B_j}$ can be
     taken into account.
 
-    Given a single observation $m$ of a true underlying flux distribution
+    Given a single observation $j$ of an unknown flux image
     $\mathbf{x}$ and assuming the noise in each pixel $i$ in the recorded counts image
-    $\mathbf{d}$ follows a Poisson distribution, the total likelihood $\mathcal{L}_m$
+    $\mathbf{D_j}$ follows a Poisson distribution, the likelihood $\ell_j$
     of obtaining the measured image from a model image of the expected
-    counts $\lambda_i$ with $N$ pixels is given by:
+    counts $\boldsymbol{\lambda_j}$ with $N$ pixels is given by:
 
     \begin{equation}
         \label{eq:poisson}
-        \mathcal{L}_m\left( \mathbf{d} | \mathbf{\lambda} \right) = \prod_i^N \frac{{e^{ - d_i } \lambda_i ^ {d_i}}}{{d_i!}}
+        \ell\left( \mathbf{D_j} | \boldsymbol{\lambda_j} \right) = \prod_{i=1}^N \frac{{e^{ - D_{j,i} } \lambda_i ^ {D_{j,i}}}}{{D_{j,i}!}}
     \end{equation}
 
 
@@ -134,30 +134,40 @@
 
     \begin{equation}
         \label{eq:cash}
-        \mathcal{C}\left( \mathbf{d} | \mathbf{\lambda} \right) = \sum_i^N \lambda_i - d_i \log{\lambda_i}
+        \mathcal{C}\left( \mathbf{D_j} | \boldsymbol{\lambda_j} \right) = \sum_{i=1}^N \lambda_{j,i} - D_{j, i} \log{\lambda_{j,i}}
     \end{equation}
 
+    By summing over all observations we finally get the joint log-likelihood of measuring a set of counts images $\mathbf{D}$ given a unknown flux image $\mathbf{x}$:
+
+    \begin{equation}
+        \label{eq:total}
+        \mathcal{L}\left( \mathbf{D} | \mathbf{x} \right) = \sum_{j=1}^J \mathcal{C}\left( \mathbf{D_j} | \mathbf{x} \right)
+    \end{equation}
+
+    Using the Maximum Likelihood Estimation (MLE) we could estimate 
+    
+    \todo{this sum corresponds to the loop over datasets in machine learning... }
+
+    \subsection{Priors}
+    Just include patch priors, or LIRA as well, or uniform?
 
     Bayes rule:
 
     \begin{equation}
         \label{eq:bayes}
-        P(\theta|\textbf{D}) = P(\theta ) \frac{\mathcal{C}(\textbf{D} |\theta)}{P(\textbf{D})}
+        P(\mathbf{x}|\textbf{D}) = \mathcal{P}(\mathbf{x} ) \frac{\mathcal{L}(\textbf{D} |\mathbf{x})}{ \mathcal{P} (\textbf{D})}
     \end{equation}
 
     The total objective function $\mathcal{L}$ is given by:
     \begin{equation}
         \label{eq:total}
-        \mathcal{L}\left( \mathbf{d_m} | \mathbf{x} \right) = \sum_m^M \mathcal{C}\left( \mathbf{d_m} | \mathbf{x} \right) - \beta \cdot \mathcal{P}(\mathbf{x})
+        \mathcal{L}\left( \mathbf{d} | \mathbf{x} \right) = \sum_m^M \mathcal{C}\left( \mathbf{d_m} | \mathbf{x} \right) - \beta \cdot \mathcal{P}(\mathbf{x})
     \end{equation}
 
     Where $\mathcal{C}\left( \mathbf{d_m} | \mathbf{x} \right)$ represents the summed log-likelihood
     for an individual observation $m$. Additionally the function includes a prior term $\mathcal{P}(\mathbf{x})$
     and a factor $\beta$ to adjust the weight of the prior with respect to the likelihood term. \todo{To be clarified: the weight
     does not really make it a prior, more a regularisation term...}
-
-    \subsection{Priors}
-    Just include patch priors, or LIRA as well, or uniform?
 
     \subsubsection{Patch-Prior}
     To improve the reconstruction quality of images for inverse problems,
@@ -271,23 +281,24 @@
     One of the standard techniques in "machine learning"...
     
 
-    \subsection{Calibration of Predicted Counts}
-    Each dataset comes with systematic errors on absolute position and background normalisation
+    \subsection{Systematic Errors of Predicted Counts}
+    Each measured counts image $\mathbf{D_j}$ is associated with systematic errors.
+    This includes e.g. the absolute position of the sources in the image and the
+    normalisation of the background image, which can vary from observation to observation.
+    To account for this we extend the model for the predicted
+    counts introduced in Eq.~\ref{eq:model}, by a background normalisation factor
+    $\alpha_j$ and a linear shift in position $\phi_j(\mathbf{x}| \delta_{x,j}, \delta_{y,j})$,
+    which is specific for each observation. This gives the following modified model definition:
     
-    \begin{itemize}
-        \item allow for systematic shifts between observations 
-        \item allow for background scaling per observation $\alpha_m$
-    \end{itemize}
-
     \begin{equation}
         \label{eq:model-npred-calibration}
-        \mathbf{\lambda}_m = \mathrm{PSF}_m \circledast \left(\mathbf{E}_m \cdot (\phi_m(\mathbf{x}| \delta_x, \delta_y) + \alpha_m \cdot \mathbf{B}_m) \right)
+        \mathbf{\lambda}_j = \mathrm{PSF}_j \circledast \left(\mathbf{E}_j \cdot (\phi_j(\mathbf{x}| \delta_{x,j}, \delta_{y,j}) + \alpha_j \cdot \mathbf{B}_j) \right)
     \end{equation}
-
-
     
-    Show example residual images before and after calibration...
-
+    In practice one observation is used as a reference and its corresponding
+    systematic shifts in position $\delta_{x,j}, \delta_{y,j}$ are frozen during
+    optimization.
+    
 
     \section{Implementation}
     \subsection{Jolideco Framework}
@@ -304,10 +315,9 @@
     based on \texttt{PyTorch} as optimization back-end. We tried to define a modular,
     object oriented code structure, to allow parts of the algorithm to be
     flexible and interchangeable, such as choice of image normalisation scales,
-    the choice of GMM models, optimization methods and serilisation formats for the 
+    the choice of GMM models, optimization methods and serialisation formats for the 
     reconstruction results as well as corresponding diagnostic information
-    such as the trace of the posterior and prior likelihood values.
-
+    such as the trace of the posterior and prior and likelihood values.
     The package is available at \url{https://github.com/jolideco/jolideco}
 
     \begin{itemize}
@@ -317,14 +327,12 @@
         \item GPU support
     \end{itemize}
 
-    In addition we use \texttt{Scikit-Learn}~\citep{Skimage2014} to learn the GMM.
-
-    We use \texttt{Astropy}~\citep{Astropy2018} for FITS serialisation and
-    handling WCS transforms.
-
-    We use \texttt{Numpy}~\citep{Numpy2020} for handling data arrays and
+    We also use \texttt{Numpy}~\citep{Numpy2020} for handling data arrays and
     \texttt{Matplotlib}~\citep{Hunter2007} for plotting.
-
+    To learn the Gaussian Mixture Models from patches we the standard implementation
+    provided in the \texttt{Scikit-Learn}~\citep{Skimage2014} package. To handle the 
+    serialisation of images to the FITS data format and to handle world coordinate
+    systems (WCS) we use \texttt{Astropy}~\citep{Astropy2018}.
     For optimization and internal data handling we use \texttt{PyTorch}~\citep{Pytorch2019}.
 
     \subsection{Jolideco GMM Library}
@@ -352,7 +360,16 @@
     as well as large images. Results are available in \url{https://github.com/jolideco/jolideco-benchmarks}
     
 
+    \subsection{Optimization Strategy}
+
+    \begin{itemize}
+        \item First run with uniform prior, to get a rough estimate
+        \item First optimize the systematic error parameters
+        \item The go for the optimization uisng the patch prior, which can be computationally costly
+    \end{itemize}
     
+    
+        
     \section{Experiments}
     \subsection{Test Datasets}
     \todo{Vinay writes this?}
