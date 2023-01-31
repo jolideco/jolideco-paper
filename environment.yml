@@ -14,6 +14,7 @@ dependencies:
     - astropy
     - scikit-image
     - scipy
-    -   pip:
-            - showyourwork
-            - matplotlib
+    -  pip:
+        - showyourwork
+        - matplotlib
+        - git+ssh://git@github.com/adonath/jolideco.git

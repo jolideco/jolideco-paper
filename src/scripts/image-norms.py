@@ -2,6 +2,7 @@ import config
 import matplotlib.pyplot as plt
 import numpy as np
 import paths
+from jolideco.utils.norms import NORMS_REGISTRY
 
 figsize = config.FigureSizeAA(aspect_ratio=1.618)
 
