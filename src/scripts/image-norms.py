@@ -18,7 +18,6 @@ ax = fig.add_axes([0.15, 0.2, 0.80, 0.77])
 x = np.linspace(0, 15, 100)
 
 for name, norm_cls in NORMS_REGISTRY.items():
-    print(name)
     if name not in init_kwargs:
         continue
 
