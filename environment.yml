@@ -1,6 +1,19 @@
+name: jolideco-paper
+
+channels:
+    - defaults
+    - conda-forge
+
+variables:
+    PYTHONNOUSERSITE: "1"
+
 dependencies:
-  - conda-forge::numpy=1.19.2
-  - conda-forge::pip=21.0.1
-  - conda-forge::python=3.9
-  - pip:
-      - matplotlib==3.4.3
+    - numpy
+    - pip
+    - python=3.10
+    - astropy
+    - scikit-image
+    - scipy
+    -   pip:
+            - showyourwork
+            - matplotlib
