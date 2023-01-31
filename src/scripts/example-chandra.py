@@ -1,9 +1,12 @@
 import config
-import paths
 import matplotlib.pyplot as plt
+import paths
+from astropy.io import fits
+from astropy.wcs import WCS
 
-figsize = config.FigureSizeAA(aspect_ratio=1.618, width_aa="two-column")
+figsize = config.FigureSizeAA(aspect_ratio=2.5, width_aa="two-column")
 
-fig, ax = plt.subplots(figsize=figsize.inch)
+wcs = WCS()
+fig, ax = plt.subplots(figsize=figsize.inch, ncols=3, subplot_kw={"projection": wcs})
 
-plt.savefig(paths.figures /"example-chandra.pdf", dpi=config.DPI)
+plt.savefig(paths.figures / "example-chandra.pdf", dpi=config.DPI)
