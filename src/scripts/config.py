@@ -9,6 +9,7 @@ from astropy.units import imperial
 BASE_PATH = Path(__file__).parent.parent
 
 FONTSIZE = 10
+DPI = 300
 
 FIGURE_WIDTH_AA = {
     "single-column": 90 * u.mm,
