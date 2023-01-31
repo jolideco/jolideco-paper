@@ -17,8 +17,8 @@ for x in range(0, 2 * image_size[0], 6):
             xy=(x, y),
             width=patch_size[0],
             height=patch_size[1],
-            facecolor=config.COLORS[1],
-            edgecolor="k",
+            facecolor=config.COLORS["viridis-1"],
+            edgecolor="None",
             alpha=0.2,
         )
 
@@ -29,12 +29,12 @@ rectangle = Rectangle(
     width=patch_size[0],
     height=patch_size[1],
     facecolor="None",
-    edgecolor=config.COLORS[-1],
+    edgecolor=config.COLORS["red"],
     lw=1,
 )
 ax.add_patch(rectangle)
 
-ax.text(x=16, y=20.5, s="8 x 8 Patch", color=config.COLORS[-1], ha="center")
+ax.text(x=16, y=20.5, s="8 x 8 Patch", color=config.COLORS["red"], ha="center")
 
 offset = patch_size[0] // 2
 ax.set_xlim(offset, image_size[0] - offset - offset // 2)

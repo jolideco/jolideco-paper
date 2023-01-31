@@ -17,14 +17,22 @@ FIGURE_WIDTH_AA = {
     "intermediate": 120 * u.mm,
 }
 
-CMAP = plt.get_cmap("viridis")
+CMAP_NAME = "viridis"
+CMAP = plt.get_cmap(CMAP_NAME)
 
-COLORS = CMAP([0, 0.25, 0.5, 0.75, 1])
-COLORS = np.append(COLORS, [[216 / 255, 27 / 255, 96 / 255, 1.]], axis=0)
+COLORS = {
+    "white": "#ffffff",
+    "red": [216 / 255, 27 / 255, 96 / 255, 1.],
+}
+
+for idx, color in enumerate(CMAP([0, 0.25, 0.5, 0.75, 1])):
+    COLORS[f"{CMAP_NAME}-{idx}"] = color
+
+COLORS_CYCLE = [f"{CMAP_NAME}-{idx}" for idx in range(5)]
 
 PROP_CYCLER = [
-    cycler(color=COLORS) +
-    cycler(linestyle=["-", "--", ":", "-.", ".", "-.-"])
+    cycler(color=[value for key, value in COLORS.items() if key in COLORS_CYCLE]) +
+    cycler(linestyle=["-", "--", ":", "-.", "."])
 ]
 
 
