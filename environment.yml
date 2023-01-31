@@ -17,4 +17,4 @@ dependencies:
     -  pip:
         - showyourwork
         - matplotlib
-        - git+ssh://git@github.com/adonath/jolideco.git
+        - git+https://adonath:${JOLIDECO_ACCESS_TOKEN}@github.com/adonath/jolideco.git
