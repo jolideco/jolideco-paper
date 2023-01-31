@@ -17,12 +17,17 @@ ax = fig.add_axes([0.15, 0.2, 0.80, 0.77])
 
 x = np.linspace(0, 15, 100)
 
-for name, norm_cls in NORMS_REGISTRY.items():
+props = config.PROP_CYCLER()
+
+for name, norm_clas in NORMS_REGISTRY.items():
     if name not in init_kwargs:
         continue
 
+    prop = next(props)
+
+    norm_cls = NORMS_REGISTRY[name]
     norm = norm_cls(**init_kwargs[name])
-    ax.plot(x, norm(x), label=name)
+    ax.plot(x, norm(x), label=name, **prop)
 
 ax.set_xlim(0, 15)
 ax.set_ylim(0, 1.2)

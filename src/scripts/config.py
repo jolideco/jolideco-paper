@@ -1,10 +1,11 @@
 """General configuration for mpl plotting scripts"""
 from pathlib import Path
+
 import matplotlib.pyplot as plt
-from astropy import units as u
 import numpy as np
-from cycler import cycler
+from astropy import units as u
 from astropy.units import imperial
+from cycler import cycler
 
 BASE_PATH = Path(__file__).parent.parent
 
@@ -22,7 +23,7 @@ CMAP = plt.get_cmap(CMAP_NAME)
 
 COLORS = {
     "white": "#ffffff",
-    "red": [216 / 255, 27 / 255, 96 / 255, 1.],
+    "red": [216 / 255, 27 / 255, 96 / 255, 1.0],
 }
 
 for idx, color in enumerate(CMAP([0, 0.25, 0.5, 0.75, 1])):
@@ -30,10 +31,9 @@ for idx, color in enumerate(CMAP([0, 0.25, 0.5, 0.75, 1])):
 
 COLORS_CYCLE = [f"{CMAP_NAME}-{idx}" for idx in range(5)]
 
-PROP_CYCLER = [
-    cycler(color=[value for key, value in COLORS.items() if key in COLORS_CYCLE]) +
-    cycler(linestyle=["-", "--", ":", "-.", "."])
-]
+PROP_CYCLER = cycler(
+    color=[value for key, value in COLORS.items() if key in COLORS_CYCLE]
+) + cycler(linestyle=["-", "--", ":", "-.", "."])
 
 
 class FigureSizeAA:
