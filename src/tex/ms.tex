@@ -8,6 +8,7 @@
 \usepackage{showyourwork}
 \usepackage{amssymb}
 \DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\arcsinh}{arcsinh}
 \newcommand{\chandra}{\textit{Chandra}~}
 \newcommand{\xmm}{\textit{XMM}~}
 \newcommand{\fermi}{\textit{Fermi}-LAT~}
@@ -52,12 +53,14 @@
     The quality of all astronomical images is affected by the limited angular resolution of the instrument
     or telescope. In addition the images are affected by the presence of noise and non-uniform exposure.
 
-    In literature there have been multiple efforts to 
+    In literature there have been multiple efforts to correct the degrading of the images
+    and maximise the scientific use. 
     
-    Any astronomical observation is affected by the limited angular resolution of the telescope.
+    Any astronomical observation is affected by the limited angular resolution of the telescope. However the problem is not specific to astronomy and has been tried to 
+    be solved for fluoresence image or others...
 
     \begin{itemize}
-        \item Richardson \& Lucy (RL)\cite{Richardson1972} \cite{Lucy1974}
+        \item Standard baseline method is Richardson \& Lucy (RL), see \cite{Richardson1972} and \cite{Lucy1974}
         \item Joint likelihood RL: \cite{Ingaramo2014} has found that RL take the best out of each image and create a "merged" image
         \item  Problem of RL decomposing structures into point sources: \cite{Reeves1994} \cite{Fish1995}
         \item Multi-scale LIRA prior of course: \cite{Esch2004, Connors2011}, advantage of error estimates / Bayesian sampling. However prior is rather "ad-hoc", no physical information / assumptions. Just "smoothness"
@@ -81,7 +84,7 @@
     The convolutional nature of the network does not make it suitable for the task. As convolution introduces smoothing.
     However the network can learn an "inverse kernel", which needs to be larger because of the uncertainty principle (\todo{reference...}).
     The large kernels are introduced by separability assumption...
-    In the limit of Poisson noise it is desirable to trace the full a-postiori likelihood, which is not possibly for most network architectures. 
+    In the limit of Poisson noise it is desirable to trace the full a-postiori likelihood, which is not possibly for most network architectures. Except for e.g. normalising flows \todo{there are refences where NFs have bee used as priors...}
 
     \section{Method}
     \subsection{Poisson Joint Likelihood}
@@ -113,20 +116,19 @@
 
     Where the expected counts $\lambda_j$ are given by the convolution of the unknown 
     flux image $\mathbf{x}$ with the observation specific point spread function $\mathrm{PSF}_j$. Additionally
-    the observation specific exposure $\mathbf{E}_j$ and background emission $\mathbf{B_j}$ can be
-    taken into account.
+    an observation specific image of the exposure $\mathbf{E}_j$ and background emission $\mathbf{B_j}$ can be
+    optionally taken into account.
 
     Given a single observation $j$ of an unknown flux image
     $\mathbf{x}$ and assuming the noise in each pixel $i$ in the recorded counts image
-    $\mathbf{D_j}$ follows a Poisson distribution, the likelihood $\ell_j$
+    $\mathbf{D_j}$ follows a Poisson distribution, the likelihood $\mathcal{P}$
     of obtaining the measured image from a model image of the expected
     counts $\boldsymbol{\lambda_j}$ with $N$ pixels is given by:
 
     \begin{equation}
         \label{eq:poisson}
-        \ell\left( \mathbf{D_j} | \boldsymbol{\lambda_j} \right) = \prod_{i=1}^N \frac{{e^{ - D_{j,i} } \lambda_i ^ {D_{j,i}}}}{{D_{j,i}!}}
+        \mathcal{P}\left( \mathbf{D_j} | \boldsymbol{\lambda_j} \right) = \prod_{i=1}^N \frac{{e^{ - D_{j,i} } \lambda_i ^ {D_{j,i}}}}{{D_{j,i}!}}
     \end{equation}
-
 
     By taking the logarithm and dropping the constant terms one can transform the
     product into a sum over pixels, which is also often called the \textit{Cash}
@@ -137,65 +139,78 @@
         \mathcal{C}\left( \mathbf{D_j} | \boldsymbol{\lambda_j} \right) = \sum_{i=1}^N \lambda_{j,i} - D_{j, i} \log{\lambda_{j,i}}
     \end{equation}
 
-    By summing over all observations we finally get the joint log-likelihood of measuring a set of counts images $\mathbf{D}$ given a unknown flux image $\mathbf{x}$:
+    By summing over all observations we finally get the joint log-likelihood of measuring a set of counts images $\mathbf{D}$ given an unknown flux image $\mathbf{x}$:
 
     \begin{equation}
-        \label{eq:total}
+        \label{eq:joint}
         \mathcal{L}\left( \mathbf{D} | \mathbf{x} \right) = \sum_{j=1}^J \mathcal{C}\left( \mathbf{D_j} | \mathbf{x} \right)
     \end{equation}
 
-    Using the Maximum Likelihood Estimation (MLE) we could estimate 
+    Using Maximum Likelihood Estimation (MLE) we could try to estimate $\mathbf{x}$ directly,
+    using some minimization procedure. However in general this represents an \textit{ill posed}
+    inverse problem. Solutions for $\mathbf{x}$ which yield similar likelihood values $\mathcal{L}_{\mathrm{Joint}}(\hat{\mathbf{x}})$ look very different from each other and might also look different compared to a 
+    given ground truth, if available. Both the convolution operation as well as the level of noise lead
+    to a loss of information in the data which cannot easily be recovered. 
     
     \todo{this sum corresponds to the loop over datasets in machine learning... }
 
-    \subsection{Priors}
-    Just include patch priors, or LIRA as well, or uniform?
-
-    Bayes rule:
+    \subsection{A Posterirori Joint Likelihood}
+    When reconstructing images in the context of inverse problems we are operating
+    in a high dimensional parameter space, because each pixel represents
+    an independent parameter in the optimization process. By using prior information
+    we can introduce correlation between the parameters, reduce the \textit{effective}
+    dimensionality of the problem and guide the optimization process towards unique 
+    and more stable solutions.
+    
+    Using Bayes rule we can estimate the a posteriori likelihood under a given prior instead:
 
     \begin{equation}
         \label{eq:bayes}
-        P(\mathbf{x}|\textbf{D}) = \mathcal{P}(\mathbf{x} ) \frac{\mathcal{L}(\textbf{D} |\mathbf{x})}{ \mathcal{P} (\textbf{D})}
+        \mathcal{P}(\mathbf{x}|\textbf{D}) = \mathcal{P}(\mathbf{x} ) \frac{\mathcal{P}(\textbf{D} |\mathbf{x})}{ \mathcal{P} (\textbf{D})}
     \end{equation}
 
-    The total objective function $\mathcal{L}$ is given by:
+    And use a Maximum a Posteriori (MAP) approach to find an estimate for $\mathbf{x}$.
+    Taking the logarithm of Eq.~\ref{eq:bayes}, replacing the definition of the likelihood $\mathcal{P}(\mathbf{D}|\mathbf{x})$ with Eq.~\ref{eq:joint} and dropping the term $\mathcal{P}(\mathbf{D})$
+    which is independent of $\mathbf{x}$, we get the following expression for the log-posterior
+    likelihood $\mathcal{L}$ :
+    
     \begin{equation}
         \label{eq:total}
-        \mathcal{L}\left( \mathbf{d} | \mathbf{x} \right) = \sum_m^M \mathcal{C}\left( \mathbf{d_m} | \mathbf{x} \right) - \beta \cdot \mathcal{P}(\mathbf{x})
+        \mathcal{L}\left(\mathbf{x} | \mathbf{D} \right) = \sum_m^M \mathcal{C}\left( \mathbf{D_m} | \mathbf{x} \right) - \beta \cdot \mathcal{L}(\mathbf{x})
     \end{equation}
 
-    Where $\mathcal{C}\left( \mathbf{d_m} | \mathbf{x} \right)$ represents the summed log-likelihood
-    for an individual observation $m$. Additionally the function includes a prior term $\mathcal{P}(\mathbf{x})$
-    and a factor $\beta$ to adjust the weight of the prior with respect to the likelihood term. \todo{To be clarified: the weight
-    does not really make it a prior, more a regularisation term...}
+    Where $\mathcal{C}\left( \mathbf{D_j} | \mathbf{x} \right)$ represents the summed log-likelihood
+    for an individual observation $j$. Additionally the function includes a prior term $\mathcal{P}(\mathbf{x})$
+    and a factor $\beta$ to adjust the weight of the prior with respect to the data likelihood term.
 
-    \subsubsection{Patch-Prior}
-    To improve the reconstruction quality of images for inverse problems,
-    such as denoising, inpainting or deconvolution it is useful to have prior
-    assumptions on the statistics of the image to guide the optimization based
-    image reconstruction process. However images are high
-    dimensional and thus difficult to capture the global image statistics
-    taking into account all pixel to pixel correlations. 
+    \subsection{Patch Based Priors}
+    In general it is difficult to capture global image statistics in a prior likelihood
+    taking into account all pixel to pixel correlations. The size of the corresponding
+    correlation matrix would grow with the number of pixels squared. However
+    astronomical images typically show local correlations between pixels.
+    This means on smaller scales images often contain basic structure such as 
+    edges, corners, periodic patterns or small regions of constant brightness.
 
-    By recognising that on smal scale images often contain basic structure such as 
-    edges, corners, periodic patterns or region of constant brightness. 
-    The idea of patch priors was first introduced by \cite{Zoran2011}.
-    Their main idea was to learn the statistics of natural images on a small
+    \cite{Zoran2011} build on this assumption for natural images and introduced the approach of
+    learning local image statistics based on patch priors. Their main idea
+    was to learn the statistics of natural images on a small
     spatial scales instead. For this they proposed to split images from a
-    representative dataset into small patches of size 8x8 pixels.
-
+    representative prior dataset into small patches of size 8x8~pixels.
     Then they learned a 64 dimensional Gaussian Mixture Model (GMM) on the
     extracted patches, treating each pixel as an independent dimension in
-    the model, with $k=200$ components. They showed that the GMM prior led to much improved
-    image reconstructions, compared to comparable approaches (which ones?).
-
-    One of the main advantages of the GMM is the possibility to
-    evaluate its log-likelihood in closed form. It is given by:
+    the model, with $k=200$ Gaussian components. They showed that the patch based GMM
+    prior led to much improved image reconstructions for multiple inverse problems 
+    such as denoising, deblurring and inpainting.
+    
+    One of the main advantages of the GMM is the possibility to evaluate its log-likelihood
+    in closed form. It is given by:
 
     \begin{equation}
-        \ell_{GMM}(\theta) = \sum_{i=1}^n \log \left( \sum_{k=1}^K \pi_k N(x_i;\mu_k, \sigma_k^2) \right )
+        \ell_{GMM}(\theta) = \sum_{i=1}^n \log \left( \sum_{k=1}^K \pi_k N(x_i;\mu_k, \Sigma_k^2) \right )
     \end{equation}
 
+    Mean value is subtracted, which represents the assumption that image structure is independent
+    of the pixel amplitude.
     With parameters $\theta = \{\mu_1,\ldots,\mu_K,\sigma_1,\ldots,\sigma_K,\pi_1,\ldots,\pi_K\}$.
     To use the learned GMM as prior for the reconstruction of another image, the image is split into
     overlapping patches. For each of the patches the log-likelihood for each of the GMM components is
@@ -206,6 +221,7 @@
         \hat{k} = \argmax{\ell_{GMM}(\theta)}
     \end{equation}
 
+    The argmax is needed because of the locality...
 
     \begin{equation}
         \mathcal{P}(x) = \sum_n \log{p_{\hat{k}}(\mathbf{P}_n x)}
@@ -235,18 +251,26 @@
     equivalent results for GMMs learned on natural images and specifically
     simulated images of black hole ring structures.
 
-    \subsubsection{Image Normalisation}
+    \subsubsection{Image Normalisation and Dynamic Range}
     Astronomical images typically show a much higher dynamic range compared to 
-    natural images. This is mostly due to the existence of real point sources, which rarely occur
-    in natural images, but a very common in astronomical images because of compact objects 
-    at high distances. The high dynamic range challenges any image reconstruction
-    algorithm. 
+    natural images. This is mostly due to the existence of point sources, which
+    rarely occur in natural images. Astronomical point sources typically relate
+    to compact bright objects, such as active galactic nuclei at high distances,
+    or binary objects and stars at Galactic distances.
     
-    The GMM patch prior is learned on normalized images, where the intensity values
+    The high dynamic range of astronomical images challenges any deconvolution method.
+    To recover point sources accurately it is required to keep correlations with
+    neighbouring pixels low, while for extended source the opposite is true. Ideally
+    those contradicting requirements can be handled with a flexible prior assumption,
+    which adapts to the data, such as the patch based GMM prior.
+    
+    The GMM patch prior is learned from other images whose pixel intensities
+    have no physical relationship of the intensities of the Poisson data we are
+    dealing with. Thus the GMM is learned on normalized images, where the intensity values
     are constrained between 0 and 1. To evaluate the GMM patch prior on the 
     model image $\mathbf{x}$ the pixel values of $\mathbf{x}$  need to be mapped 
-    in the same dynamic range between 0 and 1. 
-
+    in the same dynamic range between 0 and 1. Multiple common choices for such a
+    mapping function are shown in Fig.~\ref{fig:image-norms}. 
 
     \begin{figure}[ht!]
         \script{image-norms.py}
@@ -255,40 +279,50 @@
             \caption{
                 Various image norms with different dynamic behaviour.
             }
-            \label{fig:patches}
+            \label{fig:image-norms}
         \end{centering}
     \end{figure}
 
     The choice of the image normalisation allows to adjust the contrast of the image
     and e.g. enhance low intensity structures, which also enhances the regularising
-    effect of the patch prior.
+    effect of the patch prior. 
 
     \todo{Which normalisation to choose, atan, asinh, log, inverse-cdf?}
+
+    There are arguments for $\arcsinh(\mathbf{x})$, see e.g. \cite{Lupton2004}.
 
     \subsubsection{Cycle Spinning}
     To avoid artifact due to the choice of the grid of overlapping patches we propose
     three variations:
 
     \begin{itemize}
-        \item Cycle spining by randomly shifting the image by a given number of pixels in x and y direction
-        \item Sub pixel cycle spinning, by randomly distributing the bightness of a given pixel to a 4 pixel grid
+        \item Cycle spinning by randomly shifting the image by a given number of pixels in x and y direction, e.g. used in \cite{Esch2004}
+        \item Sub pixel cycle spinning, by randomly distributing the brightness of a given pixel to a 4 pixel grid \todo{This is something I came up with to allow for point sources to have sub-pixel positions, but I never showed it actually works...}
         \item A randomly chosen patch grid, such that each pixel is at least covered once.
-        The random grid of patches was proposed by \cite{Parameswaran2018}.
+        The random grid of patches was proposed by \cite{Parameswaran2018}. This has the advantage of potentially speeding up the computation as well.
     \end{itemize}
 
     \subsection{Cross Validation}
-    The use of multiple dataset allows to sue cross-validation to prevent overfitting.
-    One of the standard techniques in "machine learning"...
+    Cross validation (CV) is an established method for model selection in statistics
+    and machine learning to prevent over-fitting the data. To perform CV the available
+    data is slit into a "training" and "validation" dataset. While optimizing the
+    log-likelihood value is monitored 
     
+    The use of multiple dataset allows to use cross-validation to prevent overfitting.
+    One of the standard techniques in "machine learning"...
+
+    Cross validation is feasible once sufficient data is available, which is e.g. the 
+    case for deep \chandra~observations.
+
+    CV as stopping rule for RL was proposed by \cite{Reeves1995}...
 
     \subsection{Systematic Errors of Predicted Counts}
     Each measured counts image $\mathbf{D_j}$ is associated with systematic errors.
-    This includes e.g. the absolute position of the sources in the image and the
-    normalisation of the background image, which can vary from observation to observation.
+    This includes e.g. the absolute position of the sources in the image (astrometry) and the normalisation of the background model, which can vary between observations.
     To account for this we extend the model for the predicted
     counts introduced in Eq.~\ref{eq:model}, by a background normalisation factor
     $\alpha_j$ and a linear shift in position $\phi_j(\mathbf{x}| \delta_{x,j}, \delta_{y,j})$,
-    which is specific for each observation. This gives the following modified model definition:
+    which is specific for each observation. This yields the following modified model definition:
     
     \begin{equation}
         \label{eq:model-npred-calibration}
@@ -297,21 +331,28 @@
     
     In practice one observation is used as a reference and its corresponding
     systematic shifts in position $\delta_{x,j}, \delta_{y,j}$ are frozen during
-    optimization.
-    
+    optimization. An example of the effect of the positional shift and background
+    normalisation can be seen in Fig.~\ref{fig:npred-systematics}.
 
+    \subsubsection{Statistical Errors}
+    \begin{itemize}
+        \item Bootstrapping observations
+        \item Bootstrapping events
+        \item Hessian diagonal
+    \end{itemize}
+    
     \section{Implementation}
     \subsection{Jolideco Framework}
     The goal of the reconstruction process is to optimize the a-posteriori
     likelihood defined by Equation~\ref{eq:total}. Given that each pixel
     in the reconstructed image represents an independent parameter
     this represents a high dimensional optimization problem.
-    Differentiable programming frameworks such as \texttt{PyTorch}
+    Differentiable programming frameworks such as \texttt{PyTorch}~\citep{Pytorch2019}
     allow for solving these kind of high dimensional modeling problems, by using
-    back-propagation and adapted optimization methods such as stochastic gradient
-    decent.
+    back-propagation and adapted optimization methods for high dimensional
+    models such as stochastic gradient decent.
 
-    The \jolideco method was implemented as an independent Python package, 
+    We implemented the \jolideco method as an independent Python package, 
     based on \texttt{PyTorch} as optimization back-end. We tried to define a modular,
     object oriented code structure, to allow parts of the algorithm to be
     flexible and interchangeable, such as choice of image normalisation scales,
@@ -320,34 +361,35 @@
     such as the trace of the posterior and prior and likelihood values.
     The package is available at \url{https://github.com/jolideco/jolideco}
 
-    \begin{itemize}
-        \item direct maximum a posteriori optimization using Pytorch etc.
-        \item auto gradient computation
-        \item ML optimizers such as ADAM
-        \item GPU support
-    \end{itemize}
-
     We also use \texttt{Numpy}~\citep{Numpy2020} for handling data arrays and
     \texttt{Matplotlib}~\citep{Hunter2007} for plotting.
     To learn the Gaussian Mixture Models from patches we the standard implementation
     provided in the \texttt{Scikit-Learn}~\citep{Skimage2014} package. To handle the 
     serialisation of images to the FITS data format and to handle world coordinate
     systems (WCS) we use \texttt{Astropy}~\citep{Astropy2018}.
-    For optimization and internal data handling we use \texttt{PyTorch}~\citep{Pytorch2019}.
+    For optimization and internal data handling we use \texttt{PyTorch}.
 
     \subsection{Jolideco GMM Library}
-    We provide a selection of learned GMMs to be used with the patch prior for reproducibility and download. 
-    Convenience for future users. \url{https://github.com/jolideco/jolideco-gmm-library}
+    On radio data \cite{Bouman2016} found the results to be mostly independent 
+    of the choice of data the GMM prior was learned on. In the low counts and high
+    noise regime we expect a much higher dependence of the results on choice of the
+    data the GMM was learned on. For testing we learned and provide a selection of GMMs to be used with the patch prior for download \footnote{\url{https://github.com/jolideco/jolideco-gmm-library}}.
     
     \subsubsection{Zoran \& Weiss}
     As baseline reference GMM we use the original model provided by \cite{Zoran2011}. The model was learned
     from the Berkley image database, by splitting the images into 8x8 patches. 
-
-    \subsubsection{GLEAM data}
-    High signal to noise Radio data from \cite{HurleyWalker2022}
+    It was downloaded from \url{https://people.csail.mit.edu/danielzoran/epllcode.zip}.
+    
+    \subsubsection{GLEAM Radio Data}
+    A prior learned from astronomical data for analysis of Galactic sources with 
+    rich morphology, such as supernova remnants, pulsar winds etc.
+    High signal to noise Radio data from \cite{HurleyWalker2022}.
+    There is physical correlation between e.g. the very high energy gamma range
+    and radio as emission is produced from the same electron populations.
+    We download 
 
     \subsubsection{NRAO Jets, Jets, Jets}
-    For the specific application of jet analysis we learned a GMM patch prior from jet images. It encodes the prior knowledge of the preferred direction of the jet. 
+    For the specific application of jet detection in extract galactic data we we learned a GMM patch prior from jet images. It encodes the prior knowledge of the preferred direction of the jet. 
 
     \begin{itemize}
         \item One with horizontal direction, where the image to be analysed should be rotated. E.g. if prior knowledge from radio data is available.
@@ -357,15 +399,27 @@
 
     \subsection{Computational Performance}
     We conduct as as series of performance benchmarks (see Appendix?) to asses the scalability of the method to a large number of observations
-    as well as large images. Results are available in \url{https://github.com/jolideco/jolideco-benchmarks}
-    
-
-    \subsection{Optimization Strategy}
+    as well as large images. 
 
     \begin{itemize}
+        \item Results are available in \url{https://github.com/jolideco/jolideco-benchmarks}
+        \item we tried the binary search tree as proposed in \cite{Parameswaran2018},
+        but without success, most likely because the native \texttt{Pytorch} support
+        for parallelisation speeds up the standard GMM quite a bit...
+        \item Could use a Neural Net for GMM component selection as proposed in
+        \item GPU support via \texttt{Pytorch}
+
+    \end{itemize}
+
+    \subsection{Optimization Strategy}
+    In practice we employ the following optimization strategy:
+    \begin{itemize}
+        \item the optimizer sees $\log{\mathbf{x}}$
         \item First run with uniform prior, to get a rough estimate
-        \item First optimize the systematic error parameters
-        \item The go for the optimization uisng the patch prior, which can be computationally costly
+        \item Then optimize the parameters associated to the systematic error described in Eq.~\ref{eq:model-npred-calibration}.
+        \item Then we go for a full optimization using the patch prior, which can be computationally costly
+        \item we use ADAM (stochastic gradient decent), without decay
+        \item learning rate scheduling? So far just a fixed step size value of $1e-3$
     \end{itemize}
     
     
@@ -456,7 +510,8 @@
 
     \section{Reproducibility}
 
-    The paper is available at \url{https://github.com/jolideco/jolideco-paper}
+    The paper is available at \url{https://github.com/jolideco/jolideco-paper} and can be reproduced using \cite{Luger2021}.
+    
     
 
 
@@ -464,7 +519,12 @@
     In this work we presented a new method for image deconvolution and denoising in the presence of Poisoon noise.
     Jolideco is great...
 
-    Extend \jolideco to handl spectral dimension at the same time.
+    \begin{itemize}
+        \item Extend \jolideco to handle spectral dimension at the same time.
+        \item Use normalising flows for patch priors see e.g. https://arxiv.org/abs/2205.12021
+        \item 
+    \end{itemize}
+    
 
     \section*{Acknowledgements}
     This work was conducted under the auspices of the CHASC International Astrostatistics Center.
