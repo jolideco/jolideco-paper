@@ -369,3 +369,150 @@ archivePrefix = {arXiv},
     abstract = {Abstract The Richardson-Lucy (R-L) algorithm has been widely used to restore degraded astronomical images. This algorithm is nothing more than the expectation-maximization (EM) algorithm applied to Poisson data. The R-L method is iterative in nature and converges to a (possibly local) maximum of the likelihood function. Unfortunately, because of the ill-conditioned nature of the problem, this maximum likelihood estimate may actually be a very poor restoration. One way to prevent degradation of the restoration is to stop the iteration before it reaches convergence. A number of methods have been proposed for determining the optimal stopping point-the point that provides the best trade-off between restoring the image and amplifying the noise. Cross-validation (CV) has recently been proposed as an advantageous method for determining the optimal stopping point. We propose a different form of CV based on generalized cross-validation (GCV) that overcomes some of the difficulties of CV. We derive a GCV-based criterion for the R-L algorithm that can be efficiently evaluated at each iteration. We present examples displaying the power of the stopping rule and discuss the abilities and shortcomings of the method.},
     year = {1995}
 }
+
+
+@article{Ulyanov2017,
+  title={Deep Image Prior},
+  author={Dmitry Ulyanov and Andrea Vedaldi and Victor S. Lempitsky},
+  journal={International Journal of Computer Vision},
+  year={2017},
+  volume={128},
+  pages={1867-1888}
+}
+
+@article{Altekrueger2022,
+  title={PatchNR: Learning from Small Data by Patch Normalizing Flow Regularization},
+  author={Fabian Altekr{\"u}ger and Alexander Denker and Paul Hagemann and Johannes Hertrich and Peter Maass and Gabriele Steidl},
+  journal={ArXiv},
+  year={2022},
+  volume={abs/2205.12021}
+}
+
+
+@article{Papyan2015,
+  author={Papyan, Vardan and Elad, Michael},
+  journal={IEEE Transactions on Image Processing}, 
+  title={Multi-Scale Patch-Based Image Restoration}, 
+  year={2016},
+  volume={25},
+  number={1},
+  pages={249-261},
+  doi={10.1109/TIP.2015.2499698}
+  }
+
+@article{Dey2006,
+    author = {Dey, Nicolas and Blanc-Feraud, Laure and Zimmer, Christophe and Roux, Pascal and Kam, Zvi and Olivo-Marin, Jean-Christophe and Zerubia, Josiane},
+    title = {Richardson–Lucy algorithm with total variation regularization for 3D confocal microscope deconvolution},
+    journal = {Microscopy Research and Technique},
+    volume = {69},
+    number = {4},
+    pages = {260-266},
+    keywords = {image deconvolution, total variation regularization, Poisson noise, fluorescence confocal microscopy},
+    doi = {https://doi.org/10.1002/jemt.20294},
+    url = {https://analyticalsciencejournals.onlinelibrary.wiley.com/doi/abs/10.1002/jemt.20294},
+    eprint = {https://analyticalsciencejournals.onlinelibrary.wiley.com/doi/pdf/10.1002/jemt.20294},
+    abstract = {Abstract Confocal laser scanning microscopy is a powerful and popular technique for 3D imaging of biological specimens. Although confocal microscopy images are much sharper than standard epifluorescence ones, they are still degraded by residual out-of-focus light and by Poisson noise due to photon-limited detection. Several deconvolution methods have been proposed to reduce these degradations, including the Richardson–Lucy iterative algorithm, which computes maximum likelihood estimation adapted to Poisson statistics. As this algorithm tends to amplify noise, regularization constraints based on some prior knowledge on the data have to be applied to stabilize the solution. Here, we propose to combine the Richardson–Lucy algorithm with a regularization constraint based on Total Variation, which suppresses unstable oscillations while preserving object edges. We show on simulated and real images that this constraint improves the deconvolution results as compared with the unregularized Richardson–Lucy algorithm, both visually and quantitatively. Microsc. Res. Tech. 69:260–266, 2006. © 2006 Wiley-Liss, Inc.},
+    year = {2006}
+}
+
+@article{Bi1994,
+       author = {{Bi}, H. and {Boerner}, G.},
+        title = "{When does the Richardson-Lucy deconvolution converge?}",
+      journal = {\aaps},
+     keywords = {METHODS: DATA ANALYSIS, METHODS: STATISTICAL, TECHNIQUES: IMAGE PROCESSING},
+         year = 1994,
+        month = dec,
+       volume = {108},
+        pages = {409-415},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/1994A&AS..108..409B},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+
+@software{Gammapyv1.0,
+  author       = {Acero, Fabio and
+                  Aguasca-Cabot, Arnau and
+                  Buchner, Johannes and
+                  Carreto Fidalgo, David and
+                  Chen, Andrew and
+                  Chromey, Alisha and
+                  Contreras Gonzalez, José Luis and
+                  de Bony de Lavergne, Mathieu and
+                  de Miranda Cardoso, José Vinícius and
+                  Deil, Christoph and
+                  Donath, Axel and
+                  Giunti, Luca and
+                  Hinton, James and
+                  Jouvin, Léa and
+                  Khélifi, Bruno and
+                  King, Johannes and
+                  Lefaucheur, Julien and
+                  Lenain, Jean-Philippe and
+                  Linhoff, Maximilian and
+                  López-Coto, Rubén and
+                  Mohrmann, Lars and
+                  Morcuende, Daniel and
+                  Nakashima, Kaori and
+                  Nigro, Cosimo and
+                  Olivera-Nieto, Laura and
+                  Owen, Ellis and
+                  Panny, Sebastian and
+                  Papadopoulos Orfanos, Dimitri and
+                  Paz Arribas, Manuel and
+                  Pintore, Fabio and
+                  Poon, Helen and
+                  Remy, Quentin and
+                  Ruiz, José Enrique and
+                  Siejkowski, Hubert and
+                  Sinha, Atreyee and
+                  Sipőcz, Brigitta M and
+                  Spir-Jacob, Marion and
+                  Terrier, Régis and
+                  Tibaldo, Luigi and
+                  Unbehaun, Tim and
+                  van Eldik, Christopher and
+                  Vuillaume, Thomas and
+                  Weinstein, Amanda and
+                  Wood, Matthew},
+  title        = {Gammapy: Python toolbox for gamma-ray astronomy},
+  month        = nov,
+  year         = 2022,
+  note         = {{If you use this software, please cite it using the 
+                   metadata from this file.}},
+  publisher    = {Zenodo},
+  version      = {1.0},
+  doi          = {10.5281/zenodo.7311399},
+  url          = {https://doi.org/10.5281/zenodo.7311399}
+}
+
+
+
+@article{Ajello2017,
+    doi = {10.3847/1538-4365/aa8221},
+    url = {https://dx.doi.org/10.3847/1538-4365/aa8221},
+    year = {2017},
+    month = {sep},
+    publisher = {The American Astronomical Society},
+    volume = {232},
+    number = {2},
+    pages = {18},
+    author = {M. Ajello and W. B. Atwood and L. Baldini and J. Ballet and G. Barbiellini and D. Bastieri and R. Bellazzini and E. Bissaldi and R. D. Blandford and E. D. Bloom and R. Bonino and J. Bregeon and R. J. Britto and P. Bruel and R. Buehler and S. Buson and R. A. Cameron and R. Caputo and M. Caragiulo and P. A. Caraveo and E. Cavazzuti and C. Cecchi and E. Charles and A. Chekhtman and C. C. Cheung and G. Chiaro and S. Ciprini and J. M. Cohen and D. Costantin and F. Costanza and A. Cuoco and S. Cutini and F. D’Ammando and F. de Palma and R. Desiante and S. W. Digel and N. Di Lalla and M. Di Mauro and L. Di Venere and A. Domínguez and P. S. Drell and D. Dumora and C. Favuzzi and S. J. Fegan and E. C. Ferrara and P. Fortin and A. Franckowiak and Y. Fukazawa and S. Funk and P. Fusco and F. Gargano and D. Gasparrini and N. Giglietto and P. Giommi and F. Giordano and M. Giroletti and T. Glanzman and D. Green and I. A. Grenier and M.-H. Grondin and J. E. Grove and L. Guillemot and S. Guiriec and A. K. Harding and E. Hays and J. W. Hewitt and D. Horan and G. Jóhannesson and S. Kensei and M. Kuss and G. La Mura and S. Larsson and L. Latronico and M. Lemoine-Goumard and J. Li and F. Longo and F. Loparco and B. Lott and P. Lubrano and J. D. Magill and S. Maldera and A. Manfreda and M. N. Mazziotta and J. E. McEnery and M. Meyer and P. F. Michelson and N. Mirabal and W. Mitthumsiri and T. Mizuno and A. A. Moiseev and M. E. Monzani and A. Morselli and I. V. Moskalenko and M. Negro and E. Nuss and T. Ohsugi and N. Omodei and M. Orienti and E. Orlando and M. Palatiello and V. S. Paliya and D. Paneque and J. S. Perkins and M. Persic and M. Pesce-Rollins and F. Piron and T. A. Porter and G. Principe and S. Rainò and R. Rando and M. Razzano and S. Razzaque and A. Reimer and O. Reimer and T. Reposeur and P. M. Saz Parkinson and C. Sgrò and D. Simone and E. J. Siskind and F. Spada and G. Spandre and P. Spinelli and L. Stawarz and D. J. Suson and M. Takahashi and D. Tak and J. G. Thayer and J. B. Thayer and D. J. Thompson and D. F. Torres and E. Torresi and E. Troja and G. Vianello and K. Wood and M. Wood},
+    title = {3FHL: The Third Catalog of Hard Fermi-LAT Sources},
+    journal = {The Astrophysical Journal Supplement Series},
+    abstract = {We present a catalog of sources detected above 10 GeV by the Fermi Large Area Telescope (LAT) in the first 7 years of data using the Pass 8 event-level analysis. This is the Third Catalog of Hard Fermi-LAT Sources (3FHL), containing 1556 objects characterized in the 10 GeV–2 TeV energy range. The sensitivity and angular resolution are improved by factors of 3 and 2 relative to the previous LAT catalog at the same energies (1FHL). The vast majority of detected sources (79\%) are associated with extragalactic counterparts at other wavelengths, including 16 sources located at very high redshift (z &gt; 2). Of the sources, 8\% have Galactic counterparts and 13\% are unassociated (or associated with a source of unknown nature). The high-latitude sky and the Galactic plane are observed with a flux sensitivity of 4.4 to 9.5 × 10−11 ph cm−2 s−1, respectively (this is approximately 0.5\% and 1\% of the Crab Nebula flux above 10 GeV). The catalog includes 214 new γ-ray sources. The substantial increase in the number of photons (more than 4 times relative to 1FHL and 10 times to 2FHL) also allows us to measure significant spectral curvature for 32 sources and find flux variability for 163 of them. Furthermore, we estimate that for the same flux limit of 10−12 erg cm−2 s−1, the energy range above 10 GeV has twice as many sources as the range above 50 GeV, highlighting the importance, for future Cherenkov telescopes, of lowering the energy threshold as much as possible.}
+}
+
+
+@inproceedings{Rosenbaum15,
+    author = {Rosenbaum, Dan and Weiss, Yair},
+    title = {The Return of the Gating Network: Combining Generative Models and Discriminative Training in Natural Image Priors},
+    year = {2015},
+    publisher = {MIT Press},
+    address = {Cambridge, MA, USA},
+    abstract = {In recent years, approaches based on machine learning have achieved state-of-the-art performance on image restoration problems. Successful approaches include both generative models of natural images as well as discriminative training of deep neural networks. Discriminative training of feed forward architectures allows explicit control over the computational cost of performing restoration and therefore often leads to better performance at the same cost at run time. In contrast, generative models have the advantage that they can be trained once and then adapted to any image restoration task by a simple use of Bayes' rule.In this paper we show how to combine the strengths of both approaches by training a discriminative, feed-forward architecture to predict the state of latent variables in a generative model of natural images. We apply this idea to the very successful Gaussian Mixture Model (GMM) of natural images. We show that it is possible to achieve comparable performance as the original GMM but with two orders of magnitude improvement in run time while maintaining the advantage of generative models.},
+    booktitle = {Proceedings of the 28th International Conference on Neural Information Processing Systems - Volume 2},
+    pages = {2683–2691},
+    numpages = {9},
+    location = {Montreal, Canada},
+    series = {NIPS'15}
+}
