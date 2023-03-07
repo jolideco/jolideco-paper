@@ -1,7 +1,7 @@
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
-import paths
 import config
+import matplotlib.pyplot as plt
+import paths
+from matplotlib.patches import Rectangle
 
 figsize = config.FigureSizeAA(aspect_ratio=2)
 
@@ -17,7 +17,7 @@ for x in range(0, 2 * image_size[0], 6):
             xy=(x, y),
             width=patch_size[0],
             height=patch_size[1],
-            facecolor=config.COLORS["viridis-1"],
+            facecolor="tab:blue",
             edgecolor="None",
             alpha=0.2,
         )
@@ -29,7 +29,7 @@ rectangle = Rectangle(
     width=patch_size[0],
     height=patch_size[1],
     facecolor="None",
-    edgecolor=config.COLORS["red"],
+    edgecolor="tab:red",
     lw=1,
 )
 ax.add_patch(rectangle)

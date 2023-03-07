@@ -1,6 +1,7 @@
 """General configuration for mpl plotting scripts"""
 from pathlib import Path
 
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 from astropy import units as u
@@ -31,9 +32,9 @@ for idx, color in enumerate(CMAP([0, 0.25, 0.5, 0.75, 1])):
 
 COLORS_CYCLE = [f"{CMAP_NAME}-{idx}" for idx in range(5)]
 
-PROP_CYCLER = cycler(
-    color=[value for key, value in COLORS.items() if key in COLORS_CYCLE]
-) + cycler(linestyle=["-", "--", ":", "-.", "."])
+PROP_CYCLER = cycler(color=mcolors.TABLEAU_COLORS) + cycler(
+    linestyle=["-", "--", ":", "-.", "."]
+)
 
 
 class FigureSizeAA:
