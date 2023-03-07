@@ -22,19 +22,19 @@ FIGURE_WIDTH_AA = {
 CMAP_NAME = "viridis"
 CMAP = plt.get_cmap(CMAP_NAME)
 
-COLORS = {
-    "white": "#ffffff",
-    "red": [216 / 255, 27 / 255, 96 / 255, 1.0],
-}
+# COLORS = {
+#     "white": "#ffffff",
+#     "red": [216 / 255, 27 / 255, 96 / 255, 1.0],
+# }
 
-for idx, color in enumerate(CMAP([0, 0.25, 0.5, 0.75, 1])):
-    COLORS[f"{CMAP_NAME}-{idx}"] = color
+# for idx, color in enumerate(CMAP([0, 0.25, 0.5, 0.75, 1])):
+#     COLORS[f"{CMAP_NAME}-{idx}"] = color
 
-COLORS_CYCLE = [f"{CMAP_NAME}-{idx}" for idx in range(5)]
+# COLORS_CYCLE = [f"{CMAP_NAME}-{idx}" for idx in range(5)]
 
-PROP_CYCLER = cycler(color=mcolors.TABLEAU_COLORS) + cycler(
-    linestyle=["-", "--", ":", "-.", "."]
-)
+# PROP_CYCLER = cycler(color=mcolors.TABLEAU_COLORS) + cycler(
+#     linestyle=["-", "--", ":", "-.", "."]
+# )
 
 
 class FigureSizeAA:

@@ -34,7 +34,7 @@ rectangle = Rectangle(
 )
 ax.add_patch(rectangle)
 
-ax.text(x=16, y=20.5, s="8 x 8 Patch", color=config.COLORS["red"], ha="center")
+ax.text(x=16, y=20.5, s="8 x 8 Patch", color="tab:red", ha="center")
 
 offset = patch_size[0] // 2
 ax.set_xlim(offset, image_size[0] - offset - offset // 2)
