@@ -60,18 +60,37 @@
 
 
     \section{Introduction}
-    The angular resolution of any physical or astronomical imaging process is inherently limited by the instrument or telescope used. Furthermore, the quality of the resulting image is affected by background or instrumental measurement noise and non-uniform exposure. This is especially true in the low signal-to-noise regime. E.g. \xray and \gammaray~astronomy
-
-    In literature there have been multiple efforts to correct the degrading of the images
-    and maximise the scientific use. 
+    The angular resolution of any physical or astronomical imaging process is inherently limited by the instrument or telescope used.
+    Furthermore, the quality of the resulting image is affected by background or instrumental measurement noise and non-uniform exposure. This is especially true in the low signal-to-noise regime, where images are affected by Poisson noise.
     
-    Any astronomical observation is affected by the limited angular resolution of the telescope. However the problem is not specific to astronomy and has been tried to 
-    be solved for fluorescence microscopy or others...
+    Such as images taken by \xray and \gammaray~astronomy but also to other fields such as 
 
-    We assume non-blind deconvolution, so the there is prior information of the PSF
+    To maximise the scientific use of available data it is desirable to correct for the instrumental imprint on the data. 
+    
+    We assume non-blind deconvolution, so the there is prior information of the point spread function (PSF). The PSF can be estimated empirically from observation of known point sources, such as distant activate galactic nuclei or a model of the PSF can obtained from simulation of the instrument. 
+    
+    This class of problems is called inverse problems.
+    
+    \subsection{Related Work}
+    In literature there have been multiple efforts to correct the degrading of the images using statistical methods.
+    The standard baseline method for image deconvolution was proposed independently by \cite{Richardson1972} and \cite{Lucy1974}. They used expectation maximisation to solve. We will refer to this method as "RL". 
 
+    One of the significant challenges in image deconvolution is the problem of Rayleigh-Lynden Bell (RL) decomposition of structures into point sources. This problem was first introduced by Reeves et al. \cite{Reeves1994} and later analyzed by Fish et al. \cite{Fish1995}. Regularized RL methods, such as total variation \citep{Dey2006} and maximum entropy \citep{Bi1994}, have been proposed to overcome this issue.
+
+    Multi-scale LIRA prior has been used in image deconvolution to incorporate error estimates and Bayesian sampling. This prior has been used in various studies, including those by Esch et al. \cite{Esch2004} and Connors et al. \cite{Connors2011}. However, the prior is ad-hoc and lacks physical information or assumptions, limiting its applicability.
+
+    Another approach to image deconvolution is joint likelihood RL, which has been shown to be effective in creating a merged image from multiple images \cite{Ingaramo2014}. In this approach, RL takes the best out of each image and merges them to create a more accurate representation of the object.
+
+    An alternative approach to solve the problem in the framework of information field theory. 
+    
+    Recently, image deconvolution using physical assumptions and decomposition into point and diffuse flux in 3D/4D has gained attention. Pumpe et al. \cite{Pumpe2018} and Selig et al. \cite{Selig2015} proposed priors based on physical assumptions, which have been shown to work well for large-scale emission. However, the smoothness assumption in these methods can lead to artifacts in the galactic plane.
+
+    The challenge is due to fundamentally contradicting goals: deconvolution favoring point sources will decompose extend structures,
+    while introducing local correlations will lead to 
+
+
+    
     \begin{itemize}
-        \item Standard baseline method is Richardson \& Lucy (RL), see \cite{Richardson1972} and \cite{Lucy1974}
          \item  Problem of RL decomposing structures into point sources: \cite{Reeves1994} \cite{Fish1995}
          \item regularised RL , e.g. total variation \citep{Dey2006} or maximum entropy \citep{Bi1994} \todo{other references?}
         \item Joint likelihood RL: \cite{Ingaramo2014} has found that RL take the best out of each image and create a "merged" image
@@ -92,6 +111,13 @@
     % \end{figure*}
 
     \subsection{A note on Deep Learning Methods}
+    In the past decade Machine learning (ML) especially deep convolutional neural networks became the \textit{de facto} standard
+    for de-blurring and super-resolution of natural images \todo{reference review?}. However their success relies on the availability of massive sets of training data with typically low noise and corresponding ground truth to perform supervised learning. For a variety of reasons this approach is not suitable for astronomical x-ray and \gammaray data.
+    
+    Astronomical data is rare and expensive and there is no ground truth. One could rely on transfer learning and simulated data. E.g. radio or optical images could be forward folded with a known PSF model and be degraded with Poisson noise. However astronomical images have a large dynamic range and show a high diversity in morphological structure, which would still require al large amount of training data. However this approach has been successfully applied for specific classes of sources, such as images of Galaxies in the Sloan Digital Sky Survey (SDSS) \todo{reference} or as a post processing step of results obtained with regularised RL \todo{Reference by Starck et al.}.
+
+    In addition to the challenge of obtaining training data, it is known that the PSF of instruments such as \chandra is highly variable. It varies with observation conditions and depends e.g. on energy as well as offset angle from the pointing direction. To cover the whole parameter space of the PSF one would need to train a network for each of the PSF models, which would require a very large computational effort.
+
     \cite{Li2014} have introduced a baseline architecture for a deep convolutional neural network for image deblurring.
     The convolutional nature of the network does not make it suitable for the task. As convolution introduces smoothing.
     However the network can learn an "inverse kernel", which needs to be larger because of the uncertainty principle (\todo{reference...}).
@@ -108,19 +134,13 @@
     about something like this...}
     \end{itemize}
 
-    Shown to work for e.g. deconvolution of Galaxy images SDSS \todo{reference?} and post-processing of regularised RL results \todo{Starck et al.}
+   
 
     
 
     \section{Method}
     \subsection{Poisson Joint Likelihood}
-    Our goal is to recover an image $\mathbf{x}$ from a set of multiple
-    low counts observations.
-    Most generally we assume our total dataset consists of $J$ individual
-    observations of the same region of the sky, which are jointly
-    modelled. The assumption is that the underlying \textit{true} emission image,
-    we are looking for does not change with time. Under this assumption these
-    datasets can be for example:
+    Our goal is to recover an image $\mathbf{x}$ from a set of multiple low counts observations. Most generally we assume our total dataset consists of $J$ individual observations of the same region of the sky, which are jointly modelled. The assumption is that the underlying \textit{true} emission image, we are looking for does not change with time. Under this assumption these datasets can be for example:
 
     \begin{itemize}
         \item Different observations of one instrument or telescope at different times and observation conditions. E.g., multiple observations of \chandra with different offset angles and exposure times.
@@ -297,13 +317,14 @@
         \item or we have to optimize the array of $\mathbf{k}$ at the same time, instead of "per patch optimization". However optimization on discrete 
         values is not easily possible in Pytorch. However here is one idea:
         group the GMM components by similarity and introduce a single continues
-        parameter $z$, which interpolates between similar components. 
+        parameter $z$, which interpolates between similar components.
+        \item Another idea is to use "Gumbel Softmax"...
         \item we also compute the mean of the likelihood for the overlapping parts
     \end{itemize}
 
     To use the learned GMM as prior for the reconstruction of another image, the image is split into overlapping patches. For each of the patches the log-likelihood for each of the GMM components is evaluated. The resulting grid of overlapping patches is illustrated in Figure~\ref{fig:patches}.
 
-    \begin{figure}[ht!]
+    \begin{figure}
         \script{patches.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/patches.pdf}
@@ -334,7 +355,18 @@
     those contradicting requirements can be handled with a single flexible prior assumption,
     which adapts to the data, such as the patch based GMM prior introduced in the previous
     section.
-    
+
+    \begin{equation}
+        \tilde{\mathbf{x}}_n = f \left(\frac{\mathbf{x}_n - \Bar{\mathbf{x}}_n}{\Bar{\mathbf{x}}_n} \right)
+    \end{equation}
+
+    With a given non-linearity:
+
+    \begin{equation}
+        f(x) = \arcsinh{x / \alpha}
+    \end{equation}
+
+    \todo{The patch normalisation remains to be decided, but it would be advantageous to get rid of the hyper-parameter associated with the total image normalisation}.
     The GMM patch prior is learned from other images whose pixel intensities
     have no physical relationship of the intensities of the Poisson data we are
     dealing with. To overcome this the GMM is learned on normalized images,
@@ -344,7 +376,8 @@
     in the same dynamic range between 0 and 1. Multiple common choices for such a
     mapping function are shown in Fig.~\ref{fig:image-norms}. 
 
-    \begin{figure}[ht!]
+
+    \begin{figure}
         \script{image-norms.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/image-norms.pdf}
@@ -483,9 +516,25 @@
 
     Alternatively we used a \textit{data augmentation} approach to learn a GMM prior with a randomized direction of the jet. For this we rotated the jet image after alignment by 
     a random angle. Then again we split each image into patches of size 8x8 pixels. In total we created \todo{insert number} patches and learned a GMM with 64 components. The prior
-    is adapted to the analysis scenario of jet detection, where no no prior knowledge on the
+    is adapted to the analysis scenario of jet detection, where no prior knowledge on the
     direction is available.
 
+    \begin{figure}
+        \script{gmm-eigen-images.py}
+        \begin{centering}
+            \includegraphics[width=\linewidth]{figures/gmm-eigen-images.pdf}
+            \caption{
+                Eigenimages of the covariance matrices of the 32 components of the GMM learned from the NRAO jets. \todo{Provide other examples...?!?}
+            }
+            \label{fig:gmm-eigen-images}
+        \end{centering}
+    \end{figure}
+
+    \subsubsection{Chandra SNRs}
+
+    Learn prior from \chandra images of supernova remnants (SNRs).  Self-similarity
+    
+     
     \subsection{Computational Performance}
     We conduct as series of performance benchmarks (see Appendix?) to asses the scalability of the method to a large number of observations
     as well as large images. 
@@ -501,6 +550,8 @@
     \end{itemize}
 
     \subsection{Optimization Strategy}
+    Maximising the \aposteriori likelihood defined Eq.\ref{eq:total} with respect to the model parameters $\mathbf{x}$ is a high dimensional optimization problem. To improve the convergence rate of the optimization process we employ the following optimization strategy: the optimization strategy begins with the optimizer viewing $\log{\mathbf{x}}$, and the first step involves running a rough estimate using a uniform prior. This step is optional, but if chosen, the next step involves optimizing the parameters associated with the systematic error described in Eq.~\ref{eq:model-npred-calibration}. Following this, a full optimization is performed using the patch prior, which can be computationally expensive. The optimization algorithm used is ADAM, a stochastic gradient descent method, without decay. Finally, there is an optional step of learning rate scheduling, although so far, a fixed step size value of $1e-3$ has been used.
+    
     In practice we employ the following optimization strategy:
     \begin{itemize}
         \item the optimizer sees $\log{\mathbf{x}}$
@@ -514,18 +565,29 @@
     
         
     \section{Experiments}
-    \subsection{Test Datasets}
+    \subsection{Test Datasets}\label{sec:testmodels}
     \todo{Vinay writes this?}
     \vlk{yes}
 
     \vlk{We have devised four distinct arrangements of combinations of point and extended sources of differents shapes to test the algorithms.  The arrangements are 
     \begin{itemize}
-        \item[ ``Gauss":] A set of four point sources arranged around an extended Gaussian source
-        \item[``Points":] Point sources arranged with different separations
-        \item[``Shield":] Disk shaped flat extended source with superposed point sources and linear jet-like features
-        \item[``Spiral":] Extended thin double-spiral with a flat disk at the center and point sources adjacent to it
+        \item[(A)] {\bf asterism:} A set of four point sources arranged around an extended Gaussian source
+        \item[(B)] {\bf points:} Point sources arranged with different separations
+        \item[(C)] {\bf shield:} Disk shaped flat extended source with superposed point sources and linear jet-like features
+        \item[(D)] {\bf spiral:} Extended thin double-spiral with a flat disk at the center and point sources adjacent to it
     \end{itemize}
     The arrangements are shown in Figure~TBD, and the details of the locations and brightness of each component is listed in Table~TBD.
+
+    \begin{figure*}
+        \centering\includegraphics{figures/chandra_gauss_fwhm4710_128x128_aster1+point1+disk1+spiral3.pdf}
+        \caption{Illustrating the source patterns used to make test datasets.  The patterns shown are for the {\sl (A)} {\tt asterism}, {\sl (B)} {\tt points}, {\sl (C)} {\tt shield}, and {\sl (D)} {\tt spiral} cases (see Section~\ref{sec:testmodels}), convolved with a sharp PSF (Gaussian with $\sigma=2$~pix).  All images are of size $128{\times}128$.  The dashed red and magenta boxes depict $32{\times}32$ and $64{\times}64$ regions of interest.  Note that the boxes are displaced to the lower left corner in Case B, and leftwards in Case D.}
+        \label{fig:simulated_models_chandra}
+    \end{figure*}
+     \begin{figure*}
+        \centering\includegraphics{figures/xmm_gauss_fwhm14130_128x128_aster1+point1+disk1+spiral3.pdf}
+        \caption{As in Figure~\ref{fig:simulated_models_chandra}, convolved with a diffuse PSF (Gaussian with $\sigma=6$~pix).}
+        \label{fig:simulated_models_xmm}
+    \end{figure*}
     }
 
     We use the test datasets provided by Vinay et al.
@@ -568,7 +630,7 @@
     \todo{which object}?
     Figure~\ref{fig:example-chandra} shows the result.
     
-    \begin{figure*}[ht!]
+    \begin{figure*}
         \script{example-chandra.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/example-chandra.pdf}
@@ -581,7 +643,7 @@
 
 
     \subsection{Combined \xmm and \chandra Observation}
-    \begin{figure*}[ht!]
+    \begin{figure*}
         \script{example-xmm-chandra.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/example-xmm-chandra.pdf}
@@ -602,16 +664,15 @@
 
     We chose the patch prior learned on the GLEAM data, described in the Section~\ref{sssec:gleam-radio-data}
     and a linear scaling. 
-    As a background model we included the latest Galactic diffuse emission model \texttt{gll\_iem\_v07.fits}.
+    As a background model we included the latest Galactic diffuse emission model \texttt{gll\_iem\_v07.fits} and nearby sources from the 3FHL catalog \cite{Ajello2017}.
 
     For the data reduction we use the fermitools \todo{add version} and Gammapy v1.0 \cite{Gammapyv1.0}.
     While the fermitools output an energy dependent counts, exposure and background cube, we use Gammapy
-    to reduce to and image, assuming a power law with index $\Gamma=1.77$ \citep{Ajello2017} as spectral model to compute the effective PSF and exposure. To preserve the information on the angular resolution we split the data into the four event types \texttt{PSF0}, \texttt{PSF1}, \texttt{PSF2} and \texttt{PSF3}
+    to reduce to and image, assuming a power law with index $\Gamma=1.77$ \citep{Ajello2017} as spectral model to compute the effective PSF and exposure. To preserve the information on the angular resolution we split the data into the four event types \texttt{PSF0}, \texttt{PSF1}, \texttt{PSF2} and \texttt{PSF3}.
     
-    Figure~\ref{fig:example-fermi-lat} shows the result. \jolideco clearly improves the noise level as well as
-    angular resolution. It reveals mophological details consistent with the HESS measurement.
+    Figure~\ref{fig:example-fermi-lat} shows the result. \jolideco clearly improves the noise level as well as angular resolution. It reveals mophological details consistent with the HESS measurement.
     
-    \begin{figure*}[ht!]
+    \begin{figure*}
         \script{example-fermi-lat.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/example-fermi-lat.pdf}
@@ -622,12 +683,16 @@
         \end{centering}
     \end{figure*}
 
-    \section{Reproducibility}
+    \section{Paper Reproducibility}
     In order to facilitate reproducibility we make source code for the paper and figures  available at \url{https://github.com/jolideco/jolideco-paper}.
     The paper can be reproduced using using the tool \texttt{Showyourwork} \citep{Luger2021}. See instructions 
     All data is available on Zenodo \todo{how do we do this exactly...?}
     
+    For the Fermi-LAT data reduction we used a custom \texttt{Snakemake} workflow \footnote{\url{https://github.com/adonath/snakemake-workflow-fermi-lat}}.
 
+    For the Chandra data reduction we used a custom \texttt{Snakemake} workflow \footnote{\url{https://github.com/adonath/snakemake-workflow-chandra}}.
+        
+    
     \section{Summary \& Conclusions}
     In this work we presented a new method for image deconvolution and denoising in the presence of Poisoon noise.
     Jolideco is great...
@@ -638,6 +703,7 @@
         \item Use other mixture models, such as Student T or generalised Gaussian. 
         \item one could try deep image priors \citep{Ulyanov2017}
         \item Extend to use GMM patch prior on multiple scales, see \cite{Papyan2015}
+        \item Exclude point sources either via separate component or "J-invariance"
     \end{itemize}
     
 
@@ -645,11 +711,16 @@
     This work was conducted under the auspices of the CHASC International Astrostatistics Center.
     CHASC is supported by NSF grants DMS-21-13615, DMS-21-13397, and DMS-21-13605; by the UK Engineering
     and Physical Sciences Research Council [EP/W015080/1]; and by NASA APRA Grant 80-NSSC21-K0285.
+    
     We thank CHASC members for many helpful discussions, especially Xiao-Li Meng and Katy McKeough.
     DvD was also supported in part by a Marie-Skodowska-Curie RISE Grant (H2020-MSCA-RISE-2019-873089)
     provided by the European Commission.
+    
     Aneta Siemiginowska, Vinay Kashyap, and Doug Burke further acknowledge support from NASA
     contract to the Chandra X-ray Center NAS8-03060.
+
+    Some of the computations in this paper were conducted on the Smithsonian High Performance
+    Cluster (SI/HPC), Smithsonian Institution \url{https://doi.org/10.25572/SIHPC}.
 
     \newpage
     \bibliography{bib.bib}
