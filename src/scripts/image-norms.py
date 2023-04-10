@@ -23,8 +23,8 @@ for name, norm_clas in NORMS_REGISTRY.items():
         continue
 
     norm_cls = NORMS_REGISTRY[name]
-    norm = norm_cls.evaluate_numpy(**init_kwargs[name])
-    ax.plot(x, norm(x), label=name)
+    norm = norm_cls(**init_kwargs[name])
+    ax.plot(x, norm.evaluate_numpy(x), label=name)
 
 ax.set_xlim(0, 15)
 ax.set_ylim(0, 1.2)
