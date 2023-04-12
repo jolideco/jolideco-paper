@@ -15,6 +15,7 @@ filename_jolideco = path / "vela-junior-above-10GeV-data-result-jolideco.fits"
 filenames_data = (path / "input").glob("*.fits")
 filename_npred = path / "vela-junior-above-10GeV-data-npred.fits"
 
+print(gammapy.__version__)
 
 npred = Map.read(filename_npred)
 
