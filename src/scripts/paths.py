@@ -27,3 +27,8 @@ figures = tex / "figures"
 
 # Absolute path to the `src/tex/output` folder (contains other user-defined output)
 output = tex / "output"
+
+
+# Joideco repos
+jolideco_repo_gmm_library = root / "../jolideco-gmm-prior-library"
+jolideco_repo_fermi_lat_example = root / "../jolideco-fermi-examples"
