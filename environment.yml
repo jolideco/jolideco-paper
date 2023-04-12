@@ -10,11 +10,11 @@ variables:
 dependencies:
     - numpy
     - pip
-    - python=3.10
+    - python
     - astropy
     - scikit-image
     - scipy
-    - gammapy=1.0
+    - gammapy
     -  pip:
         - showyourwork
         - matplotlib
