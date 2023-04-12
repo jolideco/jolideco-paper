@@ -13,7 +13,7 @@ path = (
 
 filename_jolideco = path / "vela-junior-above-10GeV-data-result-jolideco.fits"
 filenames_data = (path / "input").glob("*.fits")
-filename_npred = path / "vela-junior-above-10GeV-data-result-npred.fits"
+filename_npred = path / "vela-junior-above-10GeV-data-npred.fits"
 
 
 npred = Map.read(filename_npred)
