@@ -38,10 +38,10 @@ def add_cbar(im, ax, fig, label=""):
     """Add cbar to a given axis and figure"""
     bbox = ax.get_position()
     loright = bbox.corners()[-2]
-    rect = [loright[0] + 0.01, loright[1], 0.02, bbox.height]
+    rect = [loright[0] + 0.005, loright[1], 0.02, bbox.height]
     cax = fig.add_axes(rect)
-    cax.set_ylabel(label)
-    return fig.colorbar(im, cax=cax, orientation="vertical")
+    cbar = fig.colorbar(im, cax=cax, orientation="vertical")
+    cbar.set_label(label)
 
 
 path = (
@@ -68,10 +68,10 @@ y_bottom = 0.22
 ax_counts = fig.add_axes([0.08, y_bottom, width, height], projection=wcs)
 format_axes(ax_counts)
 
-ax_flux = fig.add_axes([0.4, y_bottom, width, height], projection=wcs)
+ax_flux = fig.add_axes([0.37, y_bottom, width, height], projection=wcs)
 format_axes(ax_flux, hide_yaxis=True)
 
-ax_residuals = fig.add_axes([0.7, y_bottom, width, height], projection=wcs)
+ax_residuals = fig.add_axes([0.69, y_bottom, width, height], projection=wcs)
 format_axes(ax_residuals, hide_yaxis=True)
 
 
@@ -99,7 +99,7 @@ add_cbar(
     ax_residuals.images[0],
     ax_residuals,
     fig,
-    label="(Counts - $N_{Pred}$) / $\sqrt{N_{Pred}}$",
+    label="$(N_{Counts} - N_{Pred}) / \sqrt{N_{Pred}}$",
 )
 
 # crop = slice(None)
@@ -115,23 +115,6 @@ add_cbar(
 # for spine in ax_psf.spines.values():
 #     spine.set_edgecolor("white")
 #     spine.set_lw(1.2)
-
-# counts.plot(
-#     ax=ax_counts,
-#     norm=norm,
-#     cmap=cmap,
-#     interpolation="None",
-# )
-# npred.plot(ax=ax_npred, norm=norm, interpolation="gaussian", cmap=cmap)
-# npred_rl.plot(ax=ax_npred_rl, norm=norm, interpolation="gaussian", cmap=cmap)
-
-# lon = ax_npred.coords["ra"]
-# lat = ax_npred.coords["dec"]
-# lat.set_ticklabel_visible(False)
-
-# lon = ax_npred_rl.coords["ra"]
-# lat = ax_npred_rl.coords["dec"]
-# lat.set_ticklabel_visible(False)
 
 # ticks = np.round(norm.inverse(np.linspace(0, 1, 10)), 1)
 # plt.colorbar(ax_npred.images[-1], cax=ax_cbar, ticks=ticks)
