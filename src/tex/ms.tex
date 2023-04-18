@@ -482,29 +482,24 @@
 
     \subsection{Jolideco GMM Library}
     \label{ssec:jolideco-gmm-library}
-    On radio data \cite{Bouman2016} found the results to be mostly independent 
-    of the choice of data the GMM prior was learned on. In the low signal-to-noise
-    regime we typically expect a higher dependence of the results on the choice of the
-    data the GMM was learned on. The choice of the prior becomes more important
-    and to avoid introducing a strong bias it should be adapted to the analysis 
-    scenario. For this reason and for purposes of testing we learned and
-    provide a selection of GMMs to be used with the patch prior for download in a \textit{GitHub} repository\footnote{\url{https://github.com/jolideco/jolideco-gmm-library}}.
+    On radio data \cite{Bouman2016} found the results to be mostly independent of the choice of data the GMM prior was learned on. The strength of the GMM prior is its high \textit{expressiveness}, meaning the prior contains a large variety of patch shapes and adapts to the data in the optimization process. However in the low signal-to-noise regime we typically expect a higher dependence of the results on the choice of the data the GMM was learned on. The choice of the prior becomes more important and to avoid introducing a strong bias it should be adapted to the analysis scenario. For this reason and for purposes of testing we learned and provide a selection of GMMs (a \textit{Library}) to be used with the patch prior for download in a \textit{GitHub} repository\footnote{\url{https://github.com/jolideco/jolideco-gmm-library}}.
     
     \subsubsection{Zoran \& Weiss}
-    As baseline reference GMM we use the original model provided by \cite{Zoran2011}. The model was learned from the Berkley image database, which contains natural images. 
-    The model was learned by splitting the images into 8x8 patches and provided by the authors as part of the source code for download\footnote{\url{https://people.csail.mit.edu/danielzoran/epllcode.zip}}.
+    As baseline reference GMM we use the original model provided by \cite{Zoran2011}. The model was learned from the Berkley image database, which contains natural images. The model was learned by splitting the images into 8x8 patches and provided by the authors as part of the source code for download\footnote{\url{https://people.csail.mit.edu/danielzoran/epllcode.zip}}.
+    More details of how the model was learned are given in the original publication.
     
     \subsubsection{GLEAM Radio Data}
     \label{sssec:gleam-radio-data}
+    
     A prior learned from astronomical data for analysis of Galactic sources with 
-    rich morphology, such as supernova remnants, pulsar winds etc.
+    rich morphology, such as supernova remnants, pulsar winds etc., but also include point sources. A good "all purpose" prior.
     High signal to noise Radio data from \cite{HurleyWalker2022}.
     There is physical correlation between e.g. the very high energy gamma range
     and radio as emission is produced from the same electron populations.
-    We downloaded the GLEAM data using the Gleam VO Client\footnote{\url{https://github.com/ICRAR/gleamvo-client}}. We restrcted the choice
+    We downloaded the GLEAM data using the Gleam VO Client\footnote{\url{https://github.com/ICRAR/gleamvo-client}}. We restricted the choice
     of data to the Galactic Plane between $b=\pm10\deg$ and $\ell = \pm180\deg$.
     In total we extracted \todo{insert number} patches and trained a GMM with 128
-    components.
+    components. 
     
 
     \subsubsection{NRAO Jets, Jets, Jets}
@@ -531,9 +526,9 @@
     \end{figure}
 
     \subsubsection{Chandra SNRs}
+    Astrophysical processes forming the morphological structures are typically self-similar \todo{provide physical argument...I guess it is just the distance distribution?}. Structures appear on multiple angular scales. This means the prior could even be learned from the data itself if sufficiently free of noise. For analysis of Galactic sources with complex morphology and typically radially symmetric features such as supernova remnants (SNRs) we learned a prior from images of the bright \chandra SNRs \textit{Cas A} and \textit{G292.0+01.8}. In total we extracted \todo{insert #} patches and learned a GMM with 128 components.
 
-    Learn prior from \chandra images of supernova remnants (SNRs).  Self-similarity
-    
+
      
     \subsection{Computational Performance}
     We conduct as series of performance benchmarks (see Appendix?) to asses the scalability of the method to a large number of observations
@@ -576,19 +571,19 @@
         \item[(C)] {\bf shield:} Disk shaped flat extended source with superposed point sources and linear jet-like features
         \item[(D)] {\bf spiral:} Extended thin double-spiral with a flat disk at the center and point sources adjacent to it
     \end{itemize}
-    The arrangements are shown in Figure~TBD, and the details of the locations and brightness of each component is listed in Table~TBD.
+    The arrangements are shown in Figure~TBD, and the details of the locations and brightness of each component is listed in Table~TBD.}
 
     \begin{figure*}
         \centering\includegraphics{figures/chandra_gauss_fwhm4710_128x128_aster1+point1+disk1+spiral3.pdf}
         \caption{Illustrating the source patterns used to make test datasets.  The patterns shown are for the {\sl (A)} {\tt asterism}, {\sl (B)} {\tt points}, {\sl (C)} {\tt shield}, and {\sl (D)} {\tt spiral} cases (see Section~\ref{sec:testmodels}), convolved with a sharp PSF (Gaussian with $\sigma=2$~pix).  All images are of size $128{\times}128$.  The dashed red and magenta boxes depict $32{\times}32$ and $64{\times}64$ regions of interest.  Note that the boxes are displaced to the lower left corner in Case B, and leftwards in Case D.}
         \label{fig:simulated_models_chandra}
     \end{figure*}
-     \begin{figure*}
+     
+    \begin{figure*}
         \centering\includegraphics{figures/xmm_gauss_fwhm14130_128x128_aster1+point1+disk1+spiral3.pdf}
         \caption{As in Figure~\ref{fig:simulated_models_chandra}, convolved with a diffuse PSF (Gaussian with $\sigma=6$~pix).}
         \label{fig:simulated_models_xmm}
     \end{figure*}
-    }
 
     We use the test datasets provided by Vinay et al.
     First we evaluate the performance of the method on a set of simulated observations.
@@ -612,23 +607,48 @@
     
     Show results of experiments on simulated toy datasets
 
+    \subsection{Methods}
+    We compare the performance of 5 different methods:
+
+    \begin{itemize}
+        \item Pylira \citep{Esch2004, scipy_proceeding}
+        \item \jolideco with a uniform prior and 10 iterations. This can be considered as a reference similar to RL.
+        \item \jolideco with a uniform prior and 10 iterations. This can be considered as a reference similar to RL.
+        \item \jolideco with a patch prior learned on Gleam data and sum patch norm
+        \item \jolideco with a patch prior from \cite{Zoran2011} and the mean subracted patch norm. This is for comparison to the original method and the method used on \cite{Bouman2016}.
+    \end{itemize}
     
 
     \subsection{Results}
+    All the results are available at \url{https://jolideco.github.io/jolideco-comparison}.
+    \subsubsection{Comparing Scenarios}
+    \jolideco shows excellent performance of a variety of morphological shapes. 
+    it converges to the reference solution for very high signal to noise.
+    
 
-    The package is available at \url{https://github.com/jolideco/jolideco-comparison}
+    \subsubsection{Comparing Background Levels}
+    Methods 
+
+    \subsubswction{Comparing Instruments}
 
 
     \section{Application Examples}
-    Show results from real observations
-
-    All the examples can be found at \url{https://github.com/jolideco/jolideco-examples}
-
     \subsection{Deep \chandra Observation}
-    Chandra is a space-based X-ray observatory that has been operational since 1999. It comprises nested cylindrical paraboloid and hyperboloid surfaces that create an imaging optical system for X-rays. In the focal plane, it has multiple instruments designed for various scientific purposes, such as the high-resolution camera (HRC) and the Advanced CCD Imaging Spectrometer (ACIS). Chandra has a typical angular resolution of 0.5 arcseconds and can cover energy ranges from \qty[mode = text]{0.1}{keV} to  \qty[mode = text]{10}{keV}.
+    As a first application example we choose a set of short exposure observations of the SNR \textit{E0102} by the \chandra telescope. \chandra is a space-based X-ray observatory that has been operational since 1999. It comprises nested cylindrical paraboloid and hyperboloid surfaces that create an imaging optical system for X-rays. In the focal plane, it has multiple instruments designed for various scientific purposes, such as the high-resolution camera (HRC) and the Advanced CCD Imaging Spectrometer (ACIS). Chandra has a typical angular resolution of 0.5 arcseconds and covers the energy range from \qty[mode = text]{0.1}{keV} to  \qty[mode = text]{10}{keV}. 
+    
+    In total we choose 25 observations with the ACIS instrument and no grating. For \chandra the instrument response varies with the observation offset \todo{reference}. With \jolideco we can handle the correct PSF for each observation. We assume a spatially constant background and exposure, however the exposure is scaled to a reference observation. The data reduction was done using ciao v4.15 and the custom snakemake workflow. PSFs were simulated for each observation independently using \textit{marx} \todo{reference} and the \textit{simulate\_psf} script. List of observation IDs can be found online. Energy range was selected from \qty[mode = text]{0.5}{keV} to  \qty[mode = text]{7}{keV} and a bins sice of 0.5 "native" bins, corresponding to a bin size of \qty[mode = text]{0.001}{}. For the spectrum we fitted a model a circular region \todo{which one?} and used it for the PSF simulation. 
 
-    \todo{which object}?
-    Figure~\ref{fig:example-chandra} shows the result.
+    For \jolideco we used the GMM prior learned on Chandra SNRs and an oversampling factor of 2. For each observation we allow the background level and position calibration to vary. Figure~\ref{fig:example-chandra} shows the final result. \jolideco clearly improve the angular resolution.
+
+    To check the quality of the model we compute a map of approximate residual significance defined by:
+
+    \begin{equation}
+        \label{eq:approx-sigma}
+        \sigma = \frac{N_{\mathrm{Counts}} - N_{\mathrm{Pred}}} {\sqrt{N_{\mathrm{Pred}}}}
+    \end{equation}
+    
+    \url{https://github.com/jolideco/jolideco-chandra-examples}
+
     
     \begin{figure*}
         \script{example-chandra.py}
@@ -643,6 +663,9 @@
 
 
     \subsection{Combined \xmm and \chandra Observation}
+    As a second application example we combine data from \chandra and \xmm.
+    \url{https://github.com/jolideco/jolideco-chandra-nustar-examples}
+        
     \begin{figure*}
         \script{example-xmm-chandra.py}
         \begin{centering}
@@ -657,28 +680,29 @@
 
     \subsection{\fermi Event Types}
     As a last application example we apply the \jolideco method to data from the Fermi Large Area Telescope (LAT).
-    The LAT is a pair conversion gamma-ray telescope on board of the Fermi satellite. It operates in the energy range between \qty[mode = text]{30}{MeV} to  \qty[mode = text]{300}{GeV}.
-    For the example we chose a source with complex morphology, the supernova remnant \textit{Vela Junior}.
-    We use 14 years (from 2008 August 4 to 2023 August 4) of \texttt{P8R3\_SOURCE} photons with reconstructed energy in the range of \qty[mode = text]{10}{GeV} to  \qty[mode = text]{2}{TeV}.
-    We selected data between  and applied a zenith angle cut of \ang{105}.
-
-    We chose the patch prior learned on the GLEAM data, described in the Section~\ref{sssec:gleam-radio-data}
-    and a linear scaling. 
-    As a background model we included the latest Galactic diffuse emission model \texttt{gll\_iem\_v07.fits} and nearby sources from the 3FHL catalog \cite{Ajello2017}.
-
-    For the data reduction we use the fermitools \todo{add version} and Gammapy v1.0 \cite{Gammapyv1.0}.
-    While the fermitools output an energy dependent counts, exposure and background cube, we use Gammapy
-    to reduce to and image, assuming a power law with index $\Gamma=1.77$ \citep{Ajello2017} as spectral model to compute the effective PSF and exposure. To preserve the information on the angular resolution we split the data into the four event types \texttt{PSF0}, \texttt{PSF1}, \texttt{PSF2} and \texttt{PSF3}.
+    The LAT is a pair conversion gamma-ray telescope on board of the Fermi satellite. It operates in the energy range between \qty[mode = text]{30}{MeV} to  \qty[mode = text]{300}{GeV}. For the example we chose again a Galactic source with complex morphology: the supernova remnant \textit{Vela Junior}. We use 14 years (from 2008 August 4 to 2023 August 4) of \texttt{P8R3\_SOURCE} photons with reconstructed energy in the range of \qty[mode = text]{10}{GeV} to  \qty[mode = text]{2}{TeV} and applied a zenith angle cut of \ang{105}. To preserve as much information as possible on the angular resolution of the instrument we split the data into the four event types \texttt{PSF0}, \texttt{PSF1}, \texttt{PSF2} and \texttt{PSF3}, as
+    defined by the \fermi collaboration. We chose a pixel size of \qty[mode = text]{0.02}{$\deg$}, which corresponds to approximately 1/5th of the size of the PSF in the best event class. For the first part of the data reduction we use the standard \textit{fermitools} \todo{add version and reference}.
     
-    Figure~\ref{fig:example-fermi-lat} shows the result. \jolideco clearly improves the noise level as well as angular resolution. It reveals mophological details consistent with the HESS measurement.
+    As the \textit{fermitools} output an energy dependent counts, exposure and PSF cube, we use the \textit{Gammapy} package to further reduce the data. In a first step we compute an image of the expected background emission. For this we rely on the latest Galactic diffuse emission model \texttt{gll\_iem\_v07.fits} and nearby sources from the 3FHL catalog \cite{Ajello2017}. We fit the model components to the data, excluding a circular region of radius \qty[mode = text]{1.02}{$\deg$} centered on \textit{Vela Junior}. Finally we reduce this model to an image by summing over the energy dimension.
+    
+    Assuming a power law with index $\Gamma=1.77$ \citep{Ajello2017} as a spectral model for \textit{Vela Junior} we also compute an effective PSF and exposure image by integrating over the energy dimension of the cube and weighting with the spectral model.
+    
+    We chose the GMM patch prior learned from \chandra SNRs described in the Section~\ref{sssec:chandra-snrs}. Because of the limited statistics we did not use any oversampling but kept the pixel size of the counts image.
+    
+    Figure~\ref{fig:example-fermi-lat} shows the result. \jolideco clearly improves the noise level as well as angular resolution. It reveals mophological details consistent with the HESS measurement \todo{Add HESS image or erosita for comparison? But this is not an analysis...}
+    The calibration of the predicted counts finds different background model norms and positional shifts in order of \todo{add value} for the different event classes. This way it corrects for systematic errors in the reconstruction of the position. As a check we compute a map of residuals based on  predicted counts, also 
+    
+
+    \url{https://github.com/jolideco/jolideco-fermi-examples}
     
     \begin{figure*}
         \script{example-fermi-lat.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/example-fermi-lat.pdf}
             \caption{
-                The \jolideco method applied to the supernova remnant \textit{RX J0852.0-4622} or \textit{Vela Junior}. The left image shows the counts above \qty[mode = text]{10}{GeV}. The different event classes are stacked into a single image.
-                The image in the center show the flux reconstructed by the \jolideco methods. The image on the right shows the normalised residuals.
+                The \jolideco method applied to \fermi data of the supernova remnant \textit{RX J0852.0-4622} or \textit{Vela Junior}. The left image shows the counts above \qty[mode = text]{10}{GeV}. The different event classes are stacked into a single image.
+                The image in the center show the flux reconstructed by the \jolideco methods. The image on the right shows the 
+                residuals as compute by Equation~\ref{eq:approx-sigma} and smoothed with a \textit{Gaussian} kernel of width 5~pixels. More information on this analysis example can be found on \url{https://github.com/jolideco/jolideco-fermi-examples}. \todo{Move color bar to top and make images larger}
             }
             \label{fig:example-fermi-lat}
         \end{centering}
@@ -694,14 +718,22 @@
     For the Chandra data reduction we used a custom \texttt{Snakemake} workflow \footnote{\url{https://github.com/adonath/snakemake-workflow-chandra}}.
         
     
-    \section{Summary \& Conclusions}
+    \section{Summary \& Outlook}
     In this work we presented a new method for image deconvolution and denoising in the presence of Poisoon noise.
     Jolideco is great...
 
+    We consider the \jolideco method as a first step into the territory of machine learning inspired methods for image data 
+    dominated by Poisson noise. By applying patch based transfer learning. 
+
+    While we achieved already superior results to any other method we have identified multiple directions for improvement and variations of the method. Firstly it is possibly to rely on more general mixture models such as a Student-T or a generalised Gaussian mixture model. Those more flexible functional shapes can account for tails in the distributions. Improved results
+    on natural images have been reported e.g. by \cite{}.
+
+    To further improve the expressiveness of the prior \cite{Altekrueger2022} used normalising flows to model the distribution of patches.
+
+    
+    
     \begin{itemize}
         \item Extend \jolideco to handle spectral dimension at the same time.
-        \item Use normalising flows for patch priors see \cite{Altekrueger2022}
-        \item Use other mixture models, such as Student T or generalised Gaussian. 
         \item one could try deep image priors \citep{Ulyanov2017}
         \item Extend to use GMM patch prior on multiple scales, see \cite{Papyan2015}
         \item Exclude point sources either via separate component or "J-invariance"
