@@ -32,3 +32,4 @@ output = tex / "output"
 # Joideco repos
 jolideco_repo_gmm_library = root / "../jolideco-gmm-prior-library"
 jolideco_repo_fermi_lat_example = root / "../jolideco-fermi-examples"
+jolideco_repo_comparison = root / "../jolideco-comparison"
