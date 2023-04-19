@@ -6,31 +6,34 @@ from astropy.visualization import simple_norm
 from matplotlib import pyplot as plt
 from matplotlib.gridspec import GridSpec
 
-scenarios = {
-    "point1": {"max_cut": 340.0, "asinh_a": 0.02},
-    "aster3": {"max_cut": 200.0, "asinh_a": 0.02},
-    "disk3": {"max_cut": 200.0, "asinh_a": 0.02},
-    "spiral3": {"max_cut": 100.0, "asinh_a": 0.02},
+scenario_titles = {
+    "A": {
+        "name": "point1",
+        "plot": {"max_cut": 340.0, "asinh_a": 0.02},
+    },
+    "B": {
+        "name": "aster3",
+        "plot": {"max_cut": 200.0, "asinh_a": 0.02},
+    },
+    "C": {
+        "name": "disk3",
+        "plot": {"max_cut": 200.0, "asinh_a": 0.02},
+    },
+    "D": {
+        "name": "spiral3",
+        "plot": {"max_cut": 100.0, "asinh_a": 0.02},
+    },
 }
 
 bg = "bg1"
 instrument = "chandra"
 
-methods = [
-    "data",
-    "gt",
-    "pylira",
-    "jolideco-uniform-prior=n=10",
-    "jolideco-uniform-prior=n=1000",
-    "jolideco-patch-prior-gleam-v0.1",
-    "jolideco-patch-prior-zoran-weiss",
-]
 
-titles = {
+method_titles = {
     "data": "Data",
     "gt": "Ground Truth",
     "pylira": "Pylira",
-    "jolideco-uniform-prior=n=10": "Jolideco\n(Unif., n=10)",
+    "jolideco-uniform-prior=n=10": "Jolideco\n(Uni, n=10)",
     "jolideco-uniform-prior=n=1000": "Jolideco\n(Unif., n=1000)",
     "jolideco-patch-prior-gleam-v0.1": "Jolideco\n(GLEAM v0.1)",
     "jolideco-patch-prior-zoran-weiss": "Jolideco\n(Zoran-Weiss)",
@@ -51,8 +54,8 @@ gridspec_kw = {
 }
 
 fig, axes = plt.subplots(
-    nrows=len(scenarios),
-    ncols=len(methods),
+    nrows=len(scenario_titles),
+    ncols=len(method_titles),
     figsize=figsize.inch,
     gridspec_kw=gridspec_kw,
 )
@@ -100,8 +103,11 @@ def read_flux(scenario, bg, instrument):
     return data
 
 
-for idx, scenario in enumerate(scenarios):
-    for jdx, method in enumerate(methods):
+for idx, scenario_title in enumerate(scenario_titles):
+    scenario = scenario_titles[scenario_title]["name"]
+    norm_kwargs = scenario_titles[scenario_title]["plot"]
+
+    for jdx, method in enumerate(method_titles):
         if method == "data":
             data = read_and_stack_counts(scenario, bg, instrument)
         elif method == "gt":
@@ -109,14 +115,22 @@ for idx, scenario in enumerate(scenarios):
         else:
             data = read_flux(scenario, bg, instrument)
 
-        norm_kwargs = scenarios[scenario]
         norm = simple_norm(data, stretch="asinh", min_cut=0, **norm_kwargs)
         axes[idx, jdx].imshow(data, cmap="viridis", origin="lower", norm=norm)
 
         if scenario == "point1":
-            axes[idx, jdx].set_title(titles[method], fontsize=9)
+            axes[idx, jdx].set_title(method_titles[method], fontsize=9)
 
         axes[idx, jdx].set_axis_off()
+
+        if method == "data":
+            axes[idx, jdx].text(
+                x=-30,
+                y=DATA_SHAPE[0] / 2.0,
+                s=scenario_title,
+                fontsize=12,
+                va="center",
+            )
 
 
 plt.savefig(paths.figures / "comparison-scenarios.pdf", dpi=config.DPI)
