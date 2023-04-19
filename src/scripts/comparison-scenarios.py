@@ -7,16 +7,17 @@ from matplotlib import pyplot as plt
 from matplotlib.gridspec import GridSpec
 
 scenarios = {
-    "point1": {"max_cut": 340.0, "asinh_a": 0.05},
-    "aster3": {"max_cut": 200.0, "asinh_a": 0.05},
-    "disk3": {"max_cut": 200.0, "asinh_a": 0.05},
-    "spiral3": {"max_cut": 100.0, "asinh_a": 0.05},
+    "point1": {"max_cut": 340.0, "asinh_a": 0.02},
+    "aster3": {"max_cut": 200.0, "asinh_a": 0.02},
+    "disk3": {"max_cut": 200.0, "asinh_a": 0.02},
+    "spiral3": {"max_cut": 100.0, "asinh_a": 0.02},
 }
 
 bg = "bg1"
 instrument = "chandra"
 
 methods = [
+    "data",
     "gt",
     "pylira",
     "jolideco-uniform-prior=n=10",
@@ -26,21 +27,24 @@ methods = [
 ]
 
 titles = {
+    "data": "Data",
     "gt": "Ground Truth",
     "pylira": "Pylira",
-    "jolideco-uniform-prior=n=10": "Jolideco\n(uniform, n=10)",
-    "jolideco-uniform-prior=n=1000": "Jolideco\n(uniform, n=1000)",
+    "jolideco-uniform-prior=n=10": "Jolideco\n(Unif., n=10)",
+    "jolideco-uniform-prior=n=1000": "Jolideco\n(Unif., n=1000)",
     "jolideco-patch-prior-gleam-v0.1": "Jolideco\n(GLEAM v0.1)",
     "jolideco-patch-prior-zoran-weiss": "Jolideco\n(Zoran-Weiss)",
 }
 
-figsize = config.FigureSizeAA(aspect_ratio=1.2, width_aa="two-column")
+figsize = config.FigureSizeAA(aspect_ratio=1.618, width_aa="two-column")
 
+upsampling_factor = 2
+DATA_SHAPE = (128, 128)
 
 gridspec_kw = {
     "left": 0.05,
-    "right": 0.95,
-    "bottom": 0.05,
+    "right": 0.98,
+    "bottom": 0.02,
     "top": 0.92,
     "wspace": 0.05,
     "hspace": 0.05,
@@ -53,24 +57,57 @@ fig, axes = plt.subplots(
     gridspec_kw=gridspec_kw,
 )
 
-path_base = paths.jolideco_repo_comparison / "results"
+
+def read_and_stack_counts(scenario, bg, instrument):
+    """Read and stack couns files"""
+    path = paths.jolideco_repo_comparison / "data"
+
+    filenames = path.glob(
+        f"{instrument}_gauss_fwhm4710_128x128_sim*_{bg}_{scenario}_iter*.fits"
+    )
+
+    data = np.zeros(DATA_SHAPE)
+
+    for filename in filenames:
+        data += fits.getdata(filename)
+
+    return data
+
+
+def read_flux_ref(scenario):
+    """Reda reference flux"""
+    path = paths.jolideco_repo_comparison / "data"
+    filenames = path.glob(f"{instrument}_gauss_fwhm4710_128x128_mod*_{scenario}.fits")
+    return fits.getdata(list(filenames)[0])
+
+
+def read_flux(scenario, bg, instrument):
+    """Read flux image"""
+    path_base = paths.jolideco_repo_comparison / "results"
+    path = path_base / scenario / bg / instrument / method
+    filename = path / f"{scenario}-{bg}-{method}-{instrument}-result.fits.gz"
+
+    with fits.open(filename) as hdul:
+        try:
+            data = hdul["FLUX"].data
+        except KeyError:
+            data = hdul[0].data
+
+    # adjust flux norm for upsampled data
+    if data.shape != DATA_SHAPE:
+        data *= upsampling_factor**2
+
+    return data
+
 
 for idx, scenario in enumerate(scenarios):
     for jdx, method in enumerate(methods):
-        if method == "gt":
-            path = paths.jolideco_repo_comparison / "data"
-            filename = list(
-                path.glob(f"{instrument}_gauss_fwhm4710_128x128_mod*_{scenario}.fits")
-            )[0]
+        if method == "data":
+            data = read_and_stack_counts(scenario, bg, instrument)
+        elif method == "gt":
+            data = read_flux_ref(scenario)
         else:
-            path = path_base / scenario / bg / instrument / method
-            filename = path / f"{scenario}-{bg}-{method}-{instrument}-result.fits.gz"
-
-        with fits.open(filename) as hdul:
-            if method in ["pylira", "gt"]:
-                data = hdul[0].data
-            else:
-                data = hdul["FLUX"].data
+            data = read_flux(scenario, bg, instrument)
 
         norm_kwargs = scenarios[scenario]
         norm = simple_norm(data, stretch="asinh", min_cut=0, **norm_kwargs)
