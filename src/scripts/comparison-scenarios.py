@@ -7,19 +7,19 @@ from matplotlib import pyplot as plt
 from matplotlib.gridspec import GridSpec
 
 scenario_titles = {
-    "A": {
+    "A1": {
         "name": "point1",
         "plot": {"max_cut": 340.0, "asinh_a": 0.02},
     },
-    "B": {
+    "B3": {
         "name": "aster3",
         "plot": {"max_cut": 200.0, "asinh_a": 0.02},
     },
-    "C": {
+    "C3": {
         "name": "disk3",
         "plot": {"max_cut": 200.0, "asinh_a": 0.02},
     },
-    "D": {
+    "D3": {
         "name": "spiral3",
         "plot": {"max_cut": 100.0, "asinh_a": 0.02},
     },
