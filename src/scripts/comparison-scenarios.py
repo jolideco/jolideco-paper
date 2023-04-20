@@ -125,7 +125,7 @@ for idx, scenario_title in enumerate(scenario_titles):
 
         if method == "data":
             axes[idx, jdx].text(
-                x=-30,
+                x=-40,
                 y=DATA_SHAPE[0] / 2.0,
                 s=scenario_title,
                 fontsize=12,
