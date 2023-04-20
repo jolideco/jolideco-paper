@@ -503,7 +503,7 @@
     
 
     \subsubsection{NRAO Jets, Jets, Jets}
-    \todo{Include the jet prior?}
+    \todo{Include the jet prior or not?}
     For the specific application of jet detection and analysis in extract galactic data we learned a GMM patch prior from radio jet images. It represents the prior knowledge of both the morphology and preferred direction of the jet. As reference data we chose
     a PR image released under the name \textit{Jets, jets jets}  by the NRAO collaboration containing ~150 example jets from their data\footnote{\url{https://public.nrao.edu/gallery/quicklook-samples/}}.
 
@@ -526,6 +526,7 @@
     \end{figure}
 
     \subsubsection{Chandra SNRs}
+    \label{sssec:chandra-snrs}. Because of the limited statistics we did not use any oversampling but kept the pixel
     Astrophysical processes forming the morphological structures are typically self-similar \todo{provide physical argument...I guess it is just the distance distribution?}. Structures appear on multiple angular scales. This means the prior could even be learned from the data itself if sufficiently free of noise. For analysis of Galactic sources with complex morphology and typically radially symmetric features such as supernova remnants (SNRs) we learned a prior from images of the bright \chandra SNRs \textit{Cas A} and \textit{G292.0+01.8}. In total we extracted \todo{insert number} patches and learned a GMM with 128 components.
 
 
@@ -652,6 +653,17 @@
 
     \subsubsection{Comparing Instruments}
 
+    \begin{figure*}
+        \script{comparison-instruments.py}
+        \begin{centering}
+            \includegraphics[width=\linewidth]{figures/comparison-instruments.pdf}
+            \caption{
+                Comparison of different deconvolution methods for different scenarios. The left column shows the raw simulated data and the second most column from the left the ground truth to comapare to. The simulation used a background level of "bg1 and a Gaussian PSF of \todo{x pixels}. The \textit{Pylira} method uses the \textit{Pylira} method with standard configuration.
+                All results are available at \url{https://jolideco.github.io/jolideco-comparison}.
+            }
+            \label{fig:comparison-instruments}
+        \end{centering}
+    \end{figure*}
 
     \section{Application Examples}
     \subsection{Deep \chandra Observation}
@@ -669,7 +681,7 @@
     \end{equation}
 
     Where $\hat{N}$ is the weighted sum of counts from a Gaussian smoothing kernel.
-    \todo{To account for the Poisson statistics it would be more precise to compute a "TS" map, but for an approximate estimation it should  be fine... }
+    \todo{To account for the Poisson statistics it would be more precise to compute a "TS" map, but for an approximate estimation it should  be fine...I have a derivation for this formula }
     
     \url{https://github.com/jolideco/jolideco-chandra-examples}
 
@@ -713,8 +725,9 @@
     
     We chose the GMM patch prior learned from \chandra SNRs described in the Section~\ref{sssec:chandra-snrs}. Because of the limited statistics we did not use any oversampling but kept the pixel size of the counts image.
     
-    Figure~\ref{fig:example-fermi-lat} shows the result. \jolideco clearly improves the noise level as well as angular resolution. It reveals mophological details consistent with the HESS measurement \todo{Add HESS image or erosita for comparison? But this is not an analysis...}
-    The calibration of the predicted counts finds different background model norms and positional shifts in order of \todo{add value} for the different event classes. This way it corrects for systematic errors in the reconstruction of the position. As a check we compute a map of residuals based on  predicted counts, also 
+    Figure~\ref{fig:example-fermi-lat} shows the data, result and residuals. The \fermi data is sparse, with very limited statistics.
+    \jolideco clearly improves the noise level as well as angular resolution. It reveals morphological details consistent with the HESS measurement \todo{Add HESS image or erosita for comparison? But this is not an analysis...}
+    The calibration of the predicted counts finds different background model norms and positional shifts in order of \todo{add value} for the different event classes. This way it corrects for systematic errors in the reconstruction of the position. As a check we compute a map of residuals based on the predicted counts, the resulting distribution of residual significances per pixel is centered at $\mu=-0.001$ with a width of $\sigma=0.991$, indicating a close agreement with a unit \textit{Gaussian} distribution.
     
 
     \url{https://github.com/jolideco/jolideco-fermi-examples}
@@ -762,7 +775,8 @@
         \item Extend to use GMM patch prior on multiple scales, see \cite{Papyan2015}
         \item Exclude point sources either via separate component or "J-invariance"
     \end{itemize}
-    
+
+    We invite the community of x-ray and \gammaray astronomers to use the method on combined data. 
 
     \section*{Acknowledgements}
     This work was conducted under the auspices of the CHASC International Astrostatistics Center.
