@@ -44,6 +44,11 @@ def add_cbar(im, ax, fig, label=""):
     cbar.set_label(label)
 
 
+def smooth_map(smooth_width, map):
+    """Return a smoothed map"""
+    return map.smooth(width=smooth_width) * smooth_width**2
+
+
 path = (
     paths.jolideco_repo_fermi_lat_example
     / "results/vela-junior-above-10GeV-data/jolideco"
@@ -89,12 +94,12 @@ flux = Map.from_geom(npred.geom, data=flux_data)
 flux.plot(ax=ax_flux, cmap="viridis", interpolation="gaussian")
 add_cbar(ax_flux.images[0], ax_flux, fig, label="Flux / $(10^{-14} cm^{-2} s^{-1})$")
 
+norm = np.pi * SMOOTH_WIDTH**2
+diff = (stacked - npred).smooth(SMOOTH_WIDTH) * norm
 
-residuals = (stacked.smooth(SMOOTH_WIDTH) - npred.smooth(SMOOTH_WIDTH)) / np.sqrt(
-    npred.smooth(SMOOTH_WIDTH)
-)
+residuals = diff / np.sqrt(npred.smooth(SMOOTH_WIDTH) * norm)
 
-residuals.plot(ax=ax_residuals, cmap="RdBu", vmin=-0.5, vmax=0.5)
+residuals.plot(ax=ax_residuals, cmap="RdBu", vmin=-2, vmax=2)
 add_cbar(
     ax_residuals.images[0],
     ax_residuals,
