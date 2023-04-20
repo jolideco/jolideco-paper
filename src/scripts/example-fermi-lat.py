@@ -87,6 +87,8 @@ for filename in filenames_data:
     counts = Map.read(filename, hdu="COUNTS").sum_over_axes(keepdims=False)
     stacked.stack(counts)
 
+print(f"Total counts: {stacked.data.sum()}")
+
 stacked.plot(ax=ax_counts, cmap="viridis", interpolation="None")
 add_cbar(ax_counts.images[0], ax_counts, fig, label="Counts")
 
@@ -99,6 +101,10 @@ norm_factor = np.pi * SMOOTH_WIDTH**2
 diff = (stacked - npred).smooth(SMOOTH_WIDTH) * norm_factor
 
 residuals = diff / np.sqrt(npred.smooth(SMOOTH_WIDTH) * norm_factor)
+
+residuals_per_pix = (stacked - npred) / np.sqrt(npred)
+print(f"Mean residuals : {residuals_per_pix.data.mean():.3f}")
+print(f"Sigma residuals: {residuals_per_pix.data.std():.3f}")
 
 norm = simple_norm(residuals.data, stretch="linear", min_cut=-2, max_cut=2)
 residuals.plot(ax=ax_residuals, cmap="RdBu", norm=norm, interpolation="gaussian")
