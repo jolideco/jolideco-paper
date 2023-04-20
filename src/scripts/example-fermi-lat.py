@@ -4,6 +4,7 @@ import numpy as np
 import paths
 from astropy import units as u
 from astropy.io import fits
+from astropy.visualization import simple_norm
 from gammapy.maps import Map
 
 SMOOTH_WIDTH = 5
@@ -99,8 +100,8 @@ diff = (stacked - npred).smooth(SMOOTH_WIDTH) * norm_factor
 
 residuals = diff / np.sqrt(npred.smooth(SMOOTH_WIDTH) * norm_factor)
 
-
-residuals.plot(ax=ax_residuals, cmap="RdBu", vmin=-2, vmax=2)
+norm = simple_norm(residuals.data, stretch="linear", min_cut=-2, max_cut=2)
+residuals.plot(ax=ax_residuals, cmap="RdBu", norm=norm, interpolation="gaussian")
 add_cbar(
     ax_residuals.images[0],
     ax_residuals,
