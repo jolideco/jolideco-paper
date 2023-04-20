@@ -134,4 +134,4 @@ for idx, scenario_title in enumerate(scenario_titles):
             )
 
 
-plt.savefig(paths.figures / "comparison-singal-noise.pdf", dpi=config.DPI)
+plt.savefig(paths.figures / "comparison-signal-noise.pdf", dpi=config.DPI)
