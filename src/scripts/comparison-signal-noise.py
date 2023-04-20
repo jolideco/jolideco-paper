@@ -7,36 +7,35 @@ from matplotlib import pyplot as plt
 from matplotlib.gridspec import GridSpec
 
 scenario_titles = {
-    "A": {
-        "name": "point1",
-        "plot": {"max_cut": 340.0, "asinh_a": 0.02},
+    "D1": {
+        "name": "spiral1",
+        "plot": {"max_cut": 10.0, "asinh_a": 0.02},
     },
-    "B": {
-        "name": "aster3",
-        "plot": {"max_cut": 200.0, "asinh_a": 0.02},
+    "D2": {
+        "name": "spiral2",
+        "plot": {"max_cut": 30.0, "asinh_a": 0.02},
     },
-    "C": {
-        "name": "disk3",
-        "plot": {"max_cut": 200.0, "asinh_a": 0.02},
-    },
-    "D": {
+    "D3": {
         "name": "spiral3",
+        "plot": {"max_cut": 30.0, "asinh_a": 0.02},
+    },
+    "D4": {
+        "name": "spiral4",
         "plot": {"max_cut": 100.0, "asinh_a": 0.02},
+    },
+    "D5": {
+        "name": "spiral5",
+        "plot": {"max_cut": 5000.0, "asinh_a": 0.02},
     },
 }
 
-bg = "bg1"
 instrument = "chandra"
+method = "jolideco-patch-prior-gleam-v0.1"
 
-
-method_titles = {
-    "data": "Data",
-    "gt": "Ground Truth",
-    "pylira": "Pylira",
-    "jolideco-uniform-prior=n=10": "Jolideco\n(Uni, n=10)",
-    "jolideco-uniform-prior=n=1000": "Jolideco\n(Unif., n=1000)",
-    "jolideco-patch-prior-gleam-v0.1": "Jolideco\n(GLEAM v0.1)",
-    "jolideco-patch-prior-zoran-weiss": "Jolideco\n(Zoran-Weiss)",
+bg_titles = {
+    "bg1": "Bkg 1",
+    "bg2": "Bkg 2",
+    "bg3": "Bkg 3",
 }
 
 figsize = config.FigureSizeAA(aspect_ratio=1.618, width_aa="two-column")
@@ -45,8 +44,8 @@ upsampling_factor = 2
 DATA_SHAPE = (128, 128)
 
 gridspec_kw = {
-    "left": 0.05,
-    "right": 0.98,
+    "left": 0.08,
+    "right": 0.99,
     "bottom": 0.02,
     "top": 0.92,
     "wspace": 0.05,
@@ -54,8 +53,8 @@ gridspec_kw = {
 }
 
 fig, axes = plt.subplots(
-    nrows=len(scenario_titles),
-    ncols=len(method_titles),
+    nrows=len(bg_titles),
+    ncols=len(scenario_titles),
     figsize=figsize.inch,
     gridspec_kw=gridspec_kw,
 )
@@ -107,30 +106,32 @@ for idx, scenario_title in enumerate(scenario_titles):
     scenario = scenario_titles[scenario_title]["name"]
     norm_kwargs = scenario_titles[scenario_title]["plot"]
 
-    for jdx, method in enumerate(method_titles):
-        if method == "data":
+    for jdx, bg in enumerate(bg_titles):
+        if scenario == "data":
             data = read_and_stack_counts(scenario, bg, instrument)
-        elif method == "gt":
+        elif scenario == "gt":
             data = read_flux_ref(scenario)
         else:
             data = read_flux(scenario, bg, instrument)
 
+        norm_kwargs["max_cut"] = np.percentile(data, 99.9)
         norm = simple_norm(data, stretch="asinh", min_cut=0, **norm_kwargs)
-        axes[idx, jdx].imshow(data, cmap="viridis", origin="lower", norm=norm)
+        ax = axes[jdx, idx]
+        ax.imshow(data, cmap="viridis", origin="lower", norm=norm)
 
-        if scenario == "point1":
-            axes[idx, jdx].set_title(method_titles[method], fontsize=9)
+        if bg == "bg1":
+            ax.set_title(scenario_title, fontsize=12)
 
-        axes[idx, jdx].set_axis_off()
+        ax.set_axis_off()
 
-        if method == "data":
-            axes[idx, jdx].text(
-                x=-30,
-                y=DATA_SHAPE[0] / 2.0,
-                s=scenario_title,
+        if scenario == "spiral1":
+            ax.text(
+                x=-100,
+                y=DATA_SHAPE[0],
+                s=bg_titles[bg],
                 fontsize=12,
                 va="center",
             )
 
 
-plt.savefig(paths.figures / "comparison-scenarios.pdf", dpi=config.DPI)
+plt.savefig(paths.figures / "comparison-singal-noise.pdf", dpi=config.DPI)
