@@ -643,7 +643,7 @@
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/comparison-signal-noise.pdf}
             \caption{
-                Comparison of different deconvolution methods for signal to noise ratios.
+                Comparison of Jolideco (GLEAM v0.1) for different signal to noise ratios.
                 All results are available at \url{https://jolideco.github.io/jolideco-comparison}.
             }
             \label{fig:comparison-signal-noise}
@@ -665,8 +665,11 @@
 
     \begin{equation}
         \label{eq:approx-sigma}
-        \sigma = \frac{N_{\mathrm{Counts}} - N_{\mathrm{Pred}}} {\sqrt{N_{\mathrm{Pred}}}}
+        \sigma \approx \frac{\hat{N}_{\mathrm{Data}} - \hat{N}_{\mathrm{Pred}}} {\sqrt{\hat{N}_{\mathrm{Pred}}}}
     \end{equation}
+
+    Where $\hat{N}$ is the weighted sum of counts from a Gaussian smoothing kernel.
+    \todo{To account for the Poisson statistics it would be more precise to compute a "TS" map, but for an approximate estimation it should  be fine... }
     
     \url{https://github.com/jolideco/jolideco-chandra-examples}
 
