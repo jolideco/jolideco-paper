@@ -357,6 +357,7 @@
     section.
 
     \begin{equation}
+        \label{eq:patch-norm}
         \tilde{\mathbf{x}}_n = f \left(\frac{\mathbf{x}_n - \Bar{\mathbf{x}}_n}{\Bar{\mathbf{x}}_n} \right)
     \end{equation}
 
@@ -561,7 +562,8 @@
     
         
     \section{Experiments}
-    \subsection{Test Datasets}\label{sec:testmodels}
+    \subsection{Test Datasets}
+    \label{subsec:test-datasets}
     \todo{Vinay writes this?}
     \vlk{yes}
 
@@ -592,7 +594,7 @@
 
     \begin{itemize}
         \item An instrument with good angular resolution, but low effective area (e.g. like Chandra)
-        \item An instrument with worse angularr resolution, bur higher effective area (e.g. like XMM)
+        \item An instrument with worse angular resolution, bur higher effective area (e.g. like XMM)
     \end{itemize}
 
     For both scenarios we assume a Gaussian PSF of sizes $\sigma = 2$ pixels and  $\sigma = 5$.
@@ -609,23 +611,55 @@
     Show results of experiments on simulated toy datasets
 
     \subsection{Methods}
-    We compare the performance of 5 different methods:
+    We compare the performance of \jolideco with different prior assumptions and against the \textit{LIRA} method introduced by \cite{Esch2004}. More specifically we use the following setup:
 
     \begin{itemize}
-        \item Pylira \citep{Esch2004, scipy_proceeding}
-        \item \jolideco with a uniform prior and 10 iterations. This can be considered as a reference similar to RL.
-        \item \jolideco with a uniform prior and 10 iterations. This can be considered as a reference similar to RL.
-        \item \jolideco with a patch prior learned on Gleam data and sum patch norm
-        \item \jolideco with a patch prior from \cite{Zoran2011} and the mean subracted patch norm. This is for comparison to the original method and the method used on \cite{Bouman2016}.
+        \item \textit{LIRA} method \citep{Esch2004} via the \textit{Pylira} Python wrapper \cite{ scipy_proceeding}. We rely on the default prior definition and allow the scale for the background to vary. We use 500 iterations as a "burn-in" period to allow the MCMC chain to converge.
+        \item \jolideco with a uniform prior and 10 iterations. This setup we consider as a base line method reference similar to RL. While the optimization procedure is different, we still expect to see similar behaviour for the local correlations of pixels. This ad hoc approach of "early stopping" is often used in practice to "regularise" the RL method.
+        \item \jolideco with a uniform prior and 1000 iterations. Sames as above except without early stopping. This gives rise to the issue of RL decomposing extended emission into point sources. 
+        \item \jolideco with a patch prior learned on GLEAM data, described in Section~\ref{sssec:gleam-radio-data}. It also uses the standardised patch normalisation. described in Equation~\ref{eq:patch-norm}. We use cycle spinning, a stride of 4 pixels and 1000 iterations. Which optimizes "to the end" until there is no relevant change in the posterior log-likelihood.
+        
+        \item \jolideco with a patch prior from \cite{Zoran2011} and the mean subtracted patch norm. This is for comparison to the original method and the method used on \cite{Bouman2016}. We use maximum image norm with the maximum values defined by the ground truth \todo{is this fair?}.
     \end{itemize}
-    
+
+    We ran the comparison on the whole parameter grid, whoever in the following we can only discuss a subset of the results, which we consider the most relevant. All results are available at \url{https://jolideco.github.io/jolideco-comparison}.
 
     \subsection{Results}
-    All the results are available at \url{https://jolideco.github.io/jolideco-comparison}.
-    \subsubsection{Comparing Scenarios}
+    \subsubsection{Comparing Methods}
     \jolideco shows excellent performance of a variety of morphological shapes. 
     it converges to the reference solution for very high signal to noise.
 
+    Figure \ref{fig:comparison-scenarios} shows the comparison of the methods for the subset of source scenarios described in Section~\ref{subsec:test-datasets}.
+
+    \par{\textbf{Pylira}}
+    Pylira shows 
+    \begin{itemize}
+        \item Shows good results for point sources
+        \item Slightly improved results on extended source, but still "speckly"
+        \item Pixels loose spatial correlation over larger scales..
+    \end{itemize}
+
+    
+    \par{\textbf{Jolideco, Uniform Prior n=1000:}}
+    The uniform priors show the expected behaviour: decompose into point sources, when "optimized to the end".
+    
+    \begin{itemize}
+        \item the uniform priors show the expected behaviour: decompose into point sources, when "optimized to the end".
+        \item yields very good results, if the true underlying source are only point sources
+        \item results are very bad, once extended emission is present. Result is "speckly" with no visible spatial correlation between nearby pixels.
+    \end{itemize}
+
+    \par{\textbf{Jolideco, Patch Prior GLEAM}}
+    \begin{itemize}
+        \item shows best results
+        \item slightly worse results on point sources only
+        \item visually very close to ground truth (!)
+        \item good compromise between sufficient separation of point sources and good reconstruction of extended sources.
+    \end{itemize}
+
+    
+    
+    
     \begin{figure*}
         \script{comparison-scenarios.py}
         \begin{centering}
@@ -639,6 +673,21 @@
     \end{figure*}
 
     \subsubsection{Comparing Background Levels}
+    
+    \todo{We should give a single number for the S/N, how to compute? Per source, like spiral ring and point sources...}
+
+    \todo{Should we leave the background norm free?}
+    Figure \ref{fig:comparison-signal-noise} shows the comparison for the method "Jolideco GLEAM v0.1" for varying signal to noise ratio for the "D" scenario.
+
+    Some observations:
+    
+    \begin{itemize}
+        \item as expected the reconstruction quality improves with stronger signal
+        \item there seems to be a "jump" in the reconstruction quality of the point sources. The weakest is much more blurry, but all the others look fine.
+        \item the method "fails" at the highest background level.
+    \end{itemize}
+
+    
        \begin{figure*}
         \script{comparison-signal-noise.py}
         \begin{centering}
@@ -652,13 +701,22 @@
     \end{figure*}
 
     \subsubsection{Comparing Instruments}
+    Figure \ref{fig:comparison-instruments} shows the comparison for the method "Jolideco GLEAM v0.1" for varying instrument scenarios and fixed background level.
 
+    \begin{itemize}
+        \item surprising reconstruction quality for XMM with a strong signal
+        \item combining the data results in the best reconstruction
+        \item for a strong signal adding the "XMM" data improves the "Chandra" result for extende sources. It further reduces the "speckliness"
+        \item not understood: reconstruction of point source becomes worse as spiral becomes brighter. Maybe because the strong signal dominates the likelihood function? Not sure how to improve this...it is image dynamics...
+        \item confirm results by \cite{Ingaramo2014}, the method takes "the" best pout of two different measurements. 
+    \end{itemize}
+    
     \begin{figure*}
         \script{comparison-instruments.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/comparison-instruments.pdf}
             \caption{
-                Comparison of different deconvolution methods for different scenarios. The left column shows the raw simulated data and the second most column from the left the ground truth to comapare to. The simulation used a background level of "bg1 and a Gaussian PSF of \todo{x pixels}. The \textit{Pylira} method uses the \textit{Pylira} method with standard configuration.
+                Comparison of the different instrument scenarios. 
                 All results are available at \url{https://jolideco.github.io/jolideco-comparison}.
             }
             \label{fig:comparison-instruments}
