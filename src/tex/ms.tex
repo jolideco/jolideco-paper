@@ -110,44 +110,25 @@
     %     \end{centering}
     % \end{figure*}
 
-    \subsection{A note on Deep Learning Methods}
-    In the past decade Machine learning (ML) especially deep convolutional neural networks became the \textit{de facto} standard
-    for de-blurring and super-resolution of natural images \todo{reference review?}. However their success relies on the availability of massive sets of training data with typically low noise and corresponding ground truth to perform supervised learning. For a variety of reasons this approach is not suitable for astronomical x-ray and \gammaray data.
+    \subsection{Some notes on Deep Learning Methods}
+    In the past decade Machine learning (ML) especially deep convolutional neural networks (CNN) became the \textit{de facto} standard for de-blurring and super-resolution of natural images \todo{reference review?}. However their success relies on the availability of massive sets of training data with typically low noise and corresponding ground truth to perform supervised learning. For a variety of reasons, which we will outline in the following, this approach is not ideal for astronomical x-ray and \gammaray data.
     
-    Astronomical data is rare and expensive and there is no ground truth. One could rely on transfer learning and simulated data. E.g. radio or optical images could be forward folded with a known PSF model and be degraded with Poisson noise. However astronomical images have a large dynamic range and show a high diversity in morphological structure, which would still require al large amount of training data. However this approach has been successfully applied for specific classes of sources, such as images of Galaxies in the Sloan Digital Sky Survey (SDSS) \todo{reference} or as a post processing step of results obtained with regularised RL \todo{Reference by Starck et al.}.
+    First astronomical x-ray and \gammaray data data is rare, expensive to obtain and there is no ground truth, because we can only observe the sky with our given instruments. To circumvent this one could rely on transfer learning and simulated data. For example radio or optical images could be forward folded with a known PSF model and be degraded with Poisson noise to generate training data. However astronomical images still have a large dynamic range and show a high diversity in morphological structure, which would still require a large amount of training data. However this approach has been successfully applied for specific classes of sources, such as images of Galaxies in the Sloan Digital Sky Survey (SDSS) \citep{Schawinski2017} or as a post processing step of results obtained with regularised RL \citep{Akhaury2022}.
 
-    In addition to the challenge of obtaining training data, it is known that the PSF of instruments such as \chandra is highly variable. It varies with observation conditions and depends e.g. on energy as well as offset angle from the pointing direction. To cover the whole parameter space of the PSF one would need to train a network for each of the PSF models, which would require a very large computational effort.
+    In addition to the challenge of obtaining training data, it is known that the PSF of instruments such as \chandra is highly variable. It varies with observation conditions and depends e.g. on energy as well as offset angle from the pointing direction. To cover the whole parameter space of the PSF one would need to train either a network for each of the PSF models, or define a very large network, which would require a very large computational effort.
 
-    \cite{Li2014} have introduced a baseline architecture for a deep convolutional neural network for image deblurring.
-    The convolutional nature of the network does not make it suitable for the task. As convolution introduces smoothing.
-    However the network can learn an "inverse kernel", which needs to be larger because of the uncertainty principle (\todo{reference...}).
-    The large kernels are introduced by separability assumption...
-    In the limit of Poisson noise it is desirable to trace the full a-postiori likelihood, which is not possibly for most network architectures. Except for e.g. normalising flows \todo{there are references where NFs have bee used as priors...}
-
-    \begin{itemize}
-    \item diversity of astronomical images is high, one would need lots of training data
-    \item Given a set of training images one could generate training data by forward folding with a known PSF model
-    and adding Poisson noise
-    \item however this would require training a new network for each PSF and noise level just to learn the task.
-    This is a high computational effort. 
-    \item By allowing multiple inputs one could still try to estimate a common flux image \todo{so far I have not heard
-    about something like this...}
-    \end{itemize}
-
-   
-
+    Some of the challenges of de-blurring with CNN are due to the convolutional nature of the networks. In a single layer, linear approximation, the network would need to learn the inverse filter of the PSF, corresponding to the well known \textit{Wiener filter} solution of the problem. This requires large convolution kernels or deep network architectures. \cite{Li2014} have introduced a baseline architecture for a deep CNN for image de-blurring by introducing large kernels under the separability assumption.
     
+    One last important challenge is obtaining uncertainty estimates for the reconstructed image from CNNs. In the limit of Poisson noise it is desirable to trace the full a-postiori likelihood, which is not possible for most network architectures, with the exception of for example normalising flows.
 
     \section{Method}
     \subsection{Poisson Joint Likelihood}
-    Our goal is to recover an image $\mathbf{x}$ from a set of multiple low counts observations. Most generally we assume our total dataset consists of $J$ individual observations of the same region of the sky, which are jointly modelled. The assumption is that the underlying \textit{true} emission image, we are looking for does not change with time. Under this assumption these datasets can be for example:
+    Our goal is to recover an image $\mathbf{x}$ from a set of multiple low counts observations. Most generally we assume our total dataset consists of $J$ individual observations of the same region of the sky, which we jointly model. The assumption is that the underlying, unknown \textit{true} emission image, we are interested in, does not change with time. Under this assumption these datasets can be for example:
 
     \begin{itemize}
-        \item Different observations of one instrument or telescope at different times and observation conditions. E.g., multiple observations of \chandra with different offset angles and exposure times.
-        \item Observations of different telescopes, which operate in the same wavelength range. E.g., a \chandra
-        and \xmm observation of the same region in the sky.
-        \item A single observation of one telescope with different data quality categories and different associated instrument
-        response functions. E.g., event classes for \fermi.
+        \item Different observations of one instrument or telescope at different times and observation conditions. E.g., multiple observations of \chandra of the same astrophysical object with different offset angles and exposure times
+        \item Observations from different telescopes, which operate in the same wavelength range. E.g., a \chandra and \xmm observation of the same region in the sky
+        \item A single observation of one telescope with different data quality categories and different associated instrument response functions, such as event classes for \fermi
     \end{itemize}
 
     Or even an arbitrary combination of the possibilities listed above. 
@@ -242,7 +223,7 @@
     show local correlations between pixels. This is because the spatial
     scale of astrophysical processes in an image is always limited by the finite
     interaction time and the fact that the interaction cannot propagate
-    faster than the speed of light. This means on smaller scales astronomical
+    faster than the speed of light (structure in the CMB is an exception here). This means on smaller scales astronomical
     images often contain basic structures such as edges, corners, filaments or
     periodic patterns formed by local astrophysical processes.
 
@@ -426,15 +407,14 @@
     Each measured counts image $\mathbf{D_j}$ is associated with systematic errors.
     This includes e.g. the pointing accuracy of the telescopes: when repeatedly pointed
     to the same object or when using different types of telescopes for observation, the
-    position of an astronomical object might vary in the image between different
-    observations. The process of correcting for these inaccuracies is called \textit{astrometry}.
+    absolute position of an astronomical object might vary in the image between different
+    observations. The process of correcting for these inaccuracies is called \textit{astrometry} and a standard procedure in for example \chandra data analysis.
     A second example of systematic errors is the variation of background emission
     between multiple observations.
     
     To account for both systematic effects we extend the model for the predicted
     counts introduced in Eq.~\ref{eq:model}, by a background normalisation factor
-    $\alpha_j$ and a linear shift in position $\phi_j(\mathbf{x}| \delta_{x,j}, \delta_{y,j})$,
-    which is specific for each observation. This yields the following modified model definition:
+    $\alpha_j$ and a linear shift in position $\phi_j(\mathbf{x}| \delta_{x,j}, \delta_{y,j})$, which is specific for each observation. This yields the following modified model definition:
     
     \begin{equation}
         \label{eq:model-npred-calibration}
@@ -551,7 +531,7 @@
     
     In practice we employ the following optimization strategy:
     \begin{itemize}
-        \item the optimizer sees $\log{\mathbf{x}}$
+        \item the optimizer sees $\log{\mathbf{x}}$, note this corresponds to an "implicit" prior of the flux being positive...
         \item First run with uniform prior, to get a rough estimate
         \item (optional) Then optimize the parameters associated to the systematic error described in Eq.~\ref{eq:model-npred-calibration}.
         \item Then we go for a full optimization using the patch prior, which can be computationally costly
@@ -564,6 +544,26 @@
     \section{Experiments}
     \subsection{Test Datasets}
     \label{subsec:test-datasets}
+
+    \begin{table*}[t]
+      \centering
+      \begin{tabular}{l|cr}
+        \hline
+        Scenario & Description & Parameters \\
+        \hline
+        A1 & A grid of point sources & x, y \\
+        B1-3 & Extended Gaussian shaped source surrounded by point sources & $\sigma$ \\
+        C1-3 & Point Sources on top of a disk shaped source, jet like line features & $r_{\mathrm{Disk}}$ \\
+        D1-5 & A spiral-arm structure surrounded by point sources and a large ring like feature & 9 \\
+        
+        
+        \hline
+      \end{tabular}
+      \caption{Source scenarios, \todo{maybe we find a good structure for the table...would list the actual flux values per component}}
+      \label{tab:1}
+    \end{table*}
+    
+
     \todo{Vinay writes this?}
     \vlk{yes}
 
@@ -594,7 +594,7 @@
 
     \begin{itemize}
         \item An instrument with good angular resolution, but low effective area (e.g. like Chandra)
-        \item An instrument with worse angular resolution, bur higher effective area (e.g. like XMM)
+        \item An instrument with worse angular resolution, but higher effective area (e.g. like XMM)
     \end{itemize}
 
     For both scenarios we assume a Gaussian PSF of sizes $\sigma = 2$ pixels and  $\sigma = 5$.
@@ -611,25 +611,54 @@
     Show results of experiments on simulated toy datasets
 
     \subsection{Methods}
-    We compare the performance of \jolideco with different prior assumptions and against the \textit{LIRA} method introduced by \cite{Esch2004}. More specifically we use the following setup:
+    \label{subsec:methods}
+    We compare the performance of \jolideco with different prior assumptions and against the \textit{LIRA} method introduced by \cite{Esch2004}. More specifically we use the following definitions:
 
     \begin{itemize}
-        \item \textit{LIRA} method \citep{Esch2004} via the \textit{Pylira} Python wrapper \cite{ scipy_proceeding}. We rely on the default prior definition and allow the scale for the background to vary. We use 500 iterations as a "burn-in" period to allow the MCMC chain to converge.
-        \item \jolideco with a uniform prior and 10 iterations. This setup we consider as a base line method reference similar to RL. While the optimization procedure is different, we still expect to see similar behaviour for the local correlations of pixels. This ad hoc approach of "early stopping" is often used in practice to "regularise" the RL method.
-        \item \jolideco with a uniform prior and 1000 iterations. Sames as above except without early stopping. This gives rise to the issue of RL decomposing extended emission into point sources. 
-        \item \jolideco with a patch prior learned on GLEAM data, described in Section~\ref{sssec:gleam-radio-data}. It also uses the standardised patch normalisation. described in Equation~\ref{eq:patch-norm}. We use cycle spinning, a stride of 4 pixels and 1000 iterations. Which optimizes "to the end" until there is no relevant change in the posterior log-likelihood.
+        \item \textbf{Pylira}: first we use the \textit{LIRA} method \citep{Esch2004} via the \textit{Pylira} Python wrapper \citep{Donath2022}. We rely on the default prior definition and allow the scale for the background to vary. In total we run the the sampling process for 5000 iterations and use 500 iterations as a "burn-in" period to allow the MCMC chain to converge. Then we compute the mean of the posterior distribution ignoring the burn-in period.
         
-        \item \jolideco with a patch prior from \cite{Zoran2011} and the mean subtracted patch norm. This is for comparison to the original method and the method used on \cite{Bouman2016}. We use maximum image norm with the maximum values defined by the ground truth \todo{is this fair?}.
+        \item \textbf{Jolideco (Uniform, n=10)}: second we use \jolideco with a uniform prior and 10 iterations. This setup we consider as a baseline method reference similar to RL. While the optimization procedure is different, we still expect to see similar behaviour for the local correlations of pixels. This ad hoc approach of "early stopping" is often used in practice to "regularise" the RL method.
+        
+        \item \textbf{Jolideco (Uniform, n=1000)}: again we use \jolideco with a uniform prior but running for 1000 iterations. Sames as above except without early stopping. This gives rise to the issue of RL decomposing extended emission into point sources. 
+        
+        \item \textbf{Jolideco (Patch, GLEAM v0.1)}: \jolideco with a patch prior learned on GLEAM data, described in Section~\ref{sssec:gleam-radio-data}. It also uses the standardised patch normalisation as described by Equation~\ref{eq:patch-norm}. We use cycle spinning, a stride of 4 pixels and 1000 iterations. Which optimizes "to the end" until there is no relevant change in the posterior log-likelihood.
+        
+        \item \textbf{Jolideco (Patch, Zoran-Weiss)}: \jolideco with a patch prior from \cite{Zoran2011} and the mean subtracted patch norm. This is for comparison to the original method and the method used on \cite{Bouman2016}. We use maximum image norm with the maximum values defined by the ground truth \todo{is this fair?}.
     \end{itemize}
 
     We ran the comparison on the whole parameter grid, whoever in the following we can only discuss a subset of the results, which we consider the most relevant. All results are available at \url{https://jolideco.github.io/jolideco-comparison}.
 
     \subsection{Results}
     \subsubsection{Comparing Methods}
+    %
+    \begin{figure*}
+        \script{comparison-scenarios.py}
+        \begin{centering}
+            \includegraphics[width=\linewidth]{figures/comparison-scenarios.pdf}
+            \caption{
+                Comparison of different deconvolution methods for different selected scenarios, as described in Section~\ref{subsec:test-datasets}. The simulation of the data used a fixed background level of, a constant exposure and a Gaussian PSF of \todo{x pixels}, corresponding to the "Chandra" scenario. The left column shows the simulated counts data and the second most column from the left the underlying ground truth to compare. The other column show the reconstructed flux by the different methods and prior assumptions. The methods are described in detail in Section~\ref{subsec:methods}.
+                A more detailed representation of the results is available at \url{https://jolideco.github.io/jolideco-comparison}.
+            }
+            \label{fig:comparison-scenarios}
+        \end{centering}
+    \end{figure*}
+    %
+    First we compare the performance of methods on the different source scenarios.
+    Figure \ref{fig:comparison-scenarios} shows the comparison of the methods for a selected subset of scenarios A1, B3, C3 and D3. 
+    
+    On scenario A1 all methods show acceptable to excellent results for the isolated point sources in the upper right of the image. This demonstrates all methods take into account the PSF and background model model correctly. The early stopped uniform prior still shows an extension for those cases, because the optimization process has not finished. The \jolideco with the Zoran-Weiss patch prior also results in less sharp images, because the prior has been learned on natural images of landscapes, objects, every day scenes etc. which do not include point sources. The \jolideco with the prior learned from GLEAM data, which also includes point sources, shows much improved results.
+
+    In the lower left of the image the point sources become fainter and closer, challenging all methods in succeeding to separate those as independent sourcea. The uniform prior optimized "to end" shows excellent results, still separating the sources. 
+    
+    For scenario B3 all method recover the point sources arpund the central extend source. 
+    However large difference can be observed in the reconstruction of the Gaussian shaped extended sources. As expected the uniform prior decompose the emission into many point sources, neglecting the spatial correlation between them. \textbf{Pylira} shows slightly improved results with the gaps between the bright emission peeks being more filled, however still lacks a convincing result into reconstructing the source as a single object. The \jolideco method with the patch priors shows the best results both visually as well as measured by the SSI. The GLEAM v0.1 patch prior reconstructs the 
+    sources almost perfectly, visually indistinguishable from the ground truth. The Zoran \& Weiss prior also shows good reconstruction of the extended sources, but less smooth and leaving a visible extension in the surrounding point sources.
+
+    Scenario C3 challenges the methods to reconstruct a weak extended source under four brighter point sources. While again all methods reconstruct the point sources well, the visual differences are large for the weal underlying extended emission.
+    
     \jolideco shows excellent performance of a variety of morphological shapes. 
     it converges to the reference solution for very high signal to noise.
 
-    Figure \ref{fig:comparison-scenarios} shows the comparison of the methods for the subset of source scenarios described in Section~\ref{subsec:test-datasets}.
 
     \par{\textbf{Pylira}}
     Pylira shows 
@@ -657,23 +686,19 @@
         \item good compromise between sufficient separation of point sources and good reconstruction of extended sources.
     \end{itemize}
 
-    
-    
-    
+    \subsubsection{Comparing Signal-to-Noise Scenarios}
+    %
     \begin{figure*}
-        \script{comparison-scenarios.py}
+        \script{comparison-signal-noise.py}
         \begin{centering}
-            \includegraphics[width=\linewidth]{figures/comparison-scenarios.pdf}
+            \includegraphics[width=\linewidth]{figures/comparison-signal-noise.pdf}
             \caption{
-                Comparison of different deconvolution methods for different scenarios. The left column shows the raw simulated data and the second most column from the left the ground truth to comapare to. The simulation used a background level of "bg1 and a Gaussian PSF of \todo{x pixels}. The \textit{Pylira} method uses the \textit{Pylira} method with standard configuration.
-                All results are available at \url{https://jolideco.github.io/jolideco-comparison}.
+                Comparison of the \jolideco method with the GLEAM v0.1 prior for different background levels and signal strength represented by scenario D1-5. The images are grouped by background levels with each column group showing the counts data in the left column and the reconstruction in the right column. The rows show the scenarios D1-5 as described in Section~\ref{subsec:test-datasets}. The background levels correspond to \qty[mode = text]{0.001}{cts / pixel}, \qty[mode = text]{0.01}{cts / pixel} and \qty[mode = text]{0.1}{cts / pixel}. The complete results for the simulations and additional information are available at \url{https://jolideco.github.io/jolideco-comparison}. \todo{the background handling does not yet seem right...maybe we should let the background norm free}
             }
-            \label{fig:comparison-scenarios}
+            \label{fig:comparison-signal-noise}
         \end{centering}
     \end{figure*}
-
-    \subsubsection{Comparing Background Levels}
-    
+    %
     \todo{We should give a single number for the S/N, how to compute? Per source, like spiral ring and point sources...}
 
     \todo{Should we leave the background norm free?}
@@ -687,48 +712,43 @@
         \item the method "fails" at the highest background level.
     \end{itemize}
 
-    
-       \begin{figure*}
-        \script{comparison-signal-noise.py}
+
+
+    \subsubsection{Comparing Instrument Scenarios}
+    %
+    \begin{figure*}
+        \script{comparison-instruments.py}
         \begin{centering}
-            \includegraphics[width=\linewidth]{figures/comparison-signal-noise.pdf}
+            \includegraphics[width=\linewidth]{figures/comparison-instruments.pdf}
             \caption{
-                Comparison of the method \jolideco (GLEAM v0.1) for different signal to noise ratios.
+                Comparison of the \jolideco method with the GLEAM v0.1 prior for the different instrument scenarios. The images are grouped by instrument scenario with each column group showing the counts data in the left column and the reconstruction in the right column. The rows show the scenarios D1-5 as described in Section\ref{subsec:test-datasets}. 
                 All results are available at \url{https://jolideco.github.io/jolideco-comparison}.
-                \todo{the background handling does not yet seem right...maybe we should let the background norm free}
             }
-            \label{fig:comparison-signal-noise}
+            \label{fig:comparison-instruments}
         \end{centering}
     \end{figure*}
+    %
+    Finally we compare the results from the \jolideco method for the different instrument scenarios. Figure~\ref{fig:comparison-instruments} shows the data as well as flux images reconstructed using \jolideco and the GLEAM v0.1 patch prior. We consider the source scenario D1-5 and the instrument scenarios and of \chandra, \xmm and combining both for a single reconstructed image. 
 
-    \subsubsection{Comparing Instruments}
-    Figure \ref{fig:comparison-instruments} shows the comparison for the method "Jolideco GLEAM v0.1" for varying instrument scenarios and fixed background level.
+    Using the \chandra data alone results in a solid reconstruction at all variations of the D scenario. As expected the reconstruction quality improves for higher signal to noise ratio. 
+
+    Using just the data from the \xmm instrument scenario results in lower quality reconstructions. However the spiral arm structure is reconstructed at all levels of the signal. The spiral arm structure is not really visible from the data by eye, because it is heavily blurred by the limited angular resolution.
+
+    Combining the data results in the best reconstruction quality. This confirms the results from \cite{Ingaramo2014}, that combining multiple measurements for deconvolution with RL was "general tool for combining images with complementary strengths".
 
     \begin{itemize}
         \item surprising reconstruction quality for XMM with a strong signal
         \item combining the data results in the best reconstruction
         \item for a strong signal adding the "XMM" data improves the "Chandra" result for extende sources. It further reduces the "speckliness"
         \item not understood: reconstruction of point source becomes worse as spiral becomes brighter. Maybe because the strong signal dominates the likelihood function? Not sure how to improve this...it is image dynamics...
-        \item confirm results by \cite{Ingaramo2014}, the method takes "the" best pout of two different measurements. 
+        \item confirm results by , the method takes "the" best pout of two different measurements. 
     \end{itemize}
     
-    \begin{figure*}
-        \script{comparison-instruments.py}
-        \begin{centering}
-            \includegraphics[width=\linewidth]{figures/comparison-instruments.pdf}
-            \caption{
-                Comparison of the different instrument scenarios. 
-                All results are available at \url{https://jolideco.github.io/jolideco-comparison}.
-            }
-            \label{fig:comparison-instruments}
-        \end{centering}
-    \end{figure*}
-
     \section{Application Examples}
     \subsection{Deep \chandra Observation}
     As a first application example we choose a set of short exposure observations of the SNR \textit{E0102} by the \chandra telescope. \chandra is a space-based X-ray observatory that has been operational since 1999. It comprises nested cylindrical paraboloid and hyperboloid surfaces that create an imaging optical system for X-rays. In the focal plane, it has multiple instruments designed for various scientific purposes, such as the high-resolution camera (HRC) and the Advanced CCD Imaging Spectrometer (ACIS). Chandra has a typical angular resolution of 0.5 arcseconds and covers the energy range from \qty[mode = text]{0.1}{keV} to  \qty[mode = text]{10}{keV}. 
     
-    In total we choose 25 observations with the ACIS instrument and no grating. For \chandra the instrument response varies with the observation offset \todo{reference}. With \jolideco we can handle the correct PSF for each observation. We assume a spatially constant background and exposure, however the exposure is scaled to a reference observation. The data reduction was done using ciao v4.15 and the custom snakemake workflow. PSFs were simulated for each observation independently using \textit{marx} \todo{reference} and the \textit{simulate\_psf} script. List of observation IDs can be found online. Energy range was selected from \qty[mode = text]{0.5}{keV} to  \qty[mode = text]{7}{keV} and a bins sice of 0.5 "native" bins, corresponding to a bin size of \qty[mode = text]{0.001}{}. For the spectrum we fitted a model a circular region \todo{which one?} and used it for the PSF simulation. 
+    In total we choose 25 observations with the ACIS instrument and no grating. For \chandra the instrument response varies with the observation offset \todo{reference}. With \jolideco we can handle the correct PSF for each observation. We assume a spatially constant background and exposure, however the exposure is scaled to a reference observation. The data reduction was done using ciao v4.15 and the custom \textit{snakemake} workflow. PSFs were simulated for each observation independently using \textit{marx} \todo{reference} and the \textit{simulate\_psf} script. List of observation IDs can be found online. Energy range was selected from \qty[mode = text]{0.5}{keV} to  \qty[mode = text]{7}{keV} and a bins sice of 0.5 "native" bins, corresponding to a bin size of \qty[mode = text]{0.001}{}. For the spectrum we fitted a model a circular region \todo{which one?} and used it for the PSF simulation. 
 
     For \jolideco we used the GMM prior learned on Chandra SNRs and an oversampling factor of 2. For each observation we allow the background level and position calibration to vary. Figure~\ref{fig:example-chandra} shows the final result. \jolideco clearly improve the angular resolution.
 
@@ -815,27 +835,28 @@
         
     
     \section{Summary \& Outlook}
-    In this work we presented a new method for image deconvolution and denoising in the presence of Poisoon noise.
-    Jolideco is great...
+    In this work we presented a new method for image de-convolution and de-noising in the presence of Poisson noise. From multiple observations of the same sky region we reconstructed a single flux image using the approximate MAP estimate of the joint likelihood under patch based GMM prior. We showed that the methods leads to improved results in variety of scenarios. Especially it leads to much improved results for extended source with a size similar to the PSF. In this case it allows to reliably recover features, that are well beyond the angular resolution of the instrument.
 
-    We consider the \jolideco method as a first step into the territory of machine learning inspired methods for image data 
-    dominated by Poisson noise. By applying patch based transfer learning. 
+    We showed that the approach of joining multiple observations leads improved results and allows to maximize the use of existing observational data.
 
-    While we achieved already superior results to any other method we have identified multiple directions for improvement and variations of the method. Firstly it is possibly to rely on more general mixture models such as a Student-T or a generalised Gaussian mixture model. Those more flexible functional shapes can account for tails in the distributions. Improved results
-    on natural images have been reported e.g. by \cite{}.
-
-    To further improve the expressiveness of the prior \cite{Altekrueger2022} used normalising flows to model the distribution of patches.
-
+    We consider the \jolideco method as a first step into the territory of \textit{ML inspired} methods for reconstruction of astronomical image data dominated by Poisson noise. While we achieved already superior results to any other existing method, 
+    the \jolideco methods shows large potential for future extension and improvements. 
     
+    Firstly it is possibly to rely on more general mixture models such as a Student-T or a generalised Gaussian mixture model. Those more flexible functional shapes can account for tails in the distributions. Improved results on natural images have been reported e.g. by \cite{}.
+
+    To further improve the expressiveness of the prior \cite{Altekrueger2022} used normalising flows to model the distribution of patches in the context of CT image reconstruction.
     
     \begin{itemize}
         \item Extend \jolideco to handle spectral dimension at the same time.
+        \item Extend \jolideco to handle multiple source components at the same time.
         \item one could try deep image priors \citep{Ulyanov2017}
         \item Extend to use GMM patch prior on multiple scales, see \cite{Papyan2015}
         \item Exclude point sources either via separate component or "J-invariance"
     \end{itemize}
 
-    We invite the community of x-ray and \gammaray astronomers to use the method on combined data. 
+  
+
+    We statistically combined data from existing telescopes to obtain a new \textit{virtual instrument}, with improved angular resolution and sensitivity. We invite the community of x-ray and \gammaray astronomers to use the method an combine data for new scientific discoveries, beyond the current angular resolution of existing instruments.
 
     \section*{Acknowledgements}
     This work was conducted under the auspices of the CHASC International Astrostatistics Center.
