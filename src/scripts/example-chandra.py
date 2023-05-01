@@ -118,7 +118,7 @@ add_cbar(ax_counts.images[0], ax_counts, fig, label="Counts")
 
 flux_data = fits.getdata(filename_jolideco, hdu="VELA-JUNIOR")
 flux = Map.from_geom(npred.geom.upsample(2), data=flux_data)
-flux.plot(ax=ax_flux, cmap="viridis", interpolation="gaussian", vmax=3.5)
+flux.plot(ax=ax_flux, cmap="viridis", interpolation="gaussian")
 add_cbar(ax_flux.images[0], ax_flux, fig, label="Flux / A.U.")
 
 norm_factor = np.pi * SMOOTH_WIDTH**2
