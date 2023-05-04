@@ -86,13 +86,13 @@ filenames_data = path.parent.glob("*/maps/e0102-broadband-*-counts.fits")
 
 npred = Map.read(filename_npred)
 
-aspect_ratio = 1.618
+aspect_ratio = 1.8
 figsize = config.FigureSizeAA(aspect_ratio=aspect_ratio, width_aa="two-column")
 
 fig = plt.figure(figsize=figsize.inch)
 
 wcs = npred.geom.wcs
-height = 0.54
+height = 0.57
 width = height / aspect_ratio
 y_bottom = 0.1
 
@@ -113,12 +113,24 @@ for filename in filenames_data:
 
 print(f"Total counts: {stacked.data.sum()}")
 
-stacked.plot(ax=ax_counts, cmap="viridis", interpolation="None")
+norm_counts = simple_norm(
+    stacked.data,
+    stretch="linear",
+    min_cut=0,
+    max_cut=145,
+)
+stacked.plot(ax=ax_counts, cmap="viridis", interpolation="None", norm=norm_counts)
 add_cbar(ax_counts.images[0], ax_counts, fig, label="Counts")
 
 flux_data = fits.getdata(filename_jolideco, hdu="VELA-JUNIOR")
 flux = Map.from_geom(npred.geom.upsample(2), data=flux_data)
-flux.plot(ax=ax_flux, cmap="viridis", interpolation="gaussian")
+norm_flux = simple_norm(
+    flux.data,
+    stretch="linear",
+    min_cut=0,
+    max_cut=3.5,
+)
+flux.plot(ax=ax_flux, cmap="viridis", interpolation="gaussian", norm=norm_flux)
 add_cbar(ax_flux.images[0], ax_flux, fig, label="Flux / A.U.")
 
 norm_factor = np.pi * SMOOTH_WIDTH**2
@@ -131,13 +143,22 @@ print(f"Mean residuals : {residuals_per_pix.data.mean():.3f}")
 print(f"Sigma residuals: {residuals_per_pix.data.std():.3f}")
 
 
-def draw_zoom(fig, ax, ax_zoom_rect, map_, center, width, title):
+def draw_zoom(
+    fig,
+    ax,
+    ax_zoom_rect,
+    map_,
+    center,
+    width,
+    title,
+    norm=None,
+):
     """Draw zoom box"""
     cutout = map_.cutout(position=center, width=width)
 
     ax_zoom = fig.add_axes(ax_zoom_rect, projection=cutout.geom.wcs)
 
-    cutout.plot(ax=ax_zoom, cmap="viridis", interpolation="None")
+    cutout.plot(ax=ax_zoom, cmap="viridis", interpolation="None", norm=norm)
     lon = ax_zoom.coords["ra"]
     lat = ax_zoom.coords["dec"]
 
@@ -149,17 +170,21 @@ def draw_zoom(fig, ax, ax_zoom_rect, map_, center, width, title):
     lon.set_ticks_visible(False)
     lon.set_ticklabel_visible(False)
     draw_zoom_box(ax, center=center, width=width)
-    ax_zoom.set_title(title, pad=3)
+    ax_zoom.set_title(f"Zoom {title}", pad=3)
+
+    y = center.icrs.dec.deg - width.to_value("deg") / 2.0
+    y -= (1.0 * u.arcsec).to_value("deg")
+    va = "top"
 
     ax.text(
-        center.icrs.ra.deg,
-        center.icrs.dec.deg + 0.51 * width.to_value("deg"),
+        x=center.icrs.ra.deg,
+        y=y,
         s=title,
         transform=ax.get_transform("icrs"),
         ha="center",
-        va="bottom",
+        va=va,
         color="white",
-        size=6,
+        size=8,
     )
 
 
@@ -167,46 +192,99 @@ def draw_zoom(fig, ax, ax_zoom_rect, map_, center, width, title):
 center = SkyCoord("16.017d", "-72.034d")
 width = 8 * u.arcsec
 
-insets_bottom = 0.655
+insets_bottom = 0.69
+insets_width = 0.26
+insets_counts_left = -0.04
+insets_flux_left = 0.46
+spacing = 0.16
+
 draw_zoom(
     fig,
     ax=ax_counts,
-    ax_zoom_rect=[0.03, insets_bottom, 0.3, 0.3],
+    ax_zoom_rect=[insets_counts_left, insets_bottom, insets_width, insets_width],
     map_=stacked,
     center=center,
     width=width,
-    title="Zoom A",
+    title="A",
+    norm=norm_counts,
 )
 draw_zoom(
     fig,
     ax=ax_flux,
-    ax_zoom_rect=[0.48, insets_bottom, 0.3, 0.3],
+    ax_zoom_rect=[insets_flux_left, insets_bottom, insets_width, insets_width],
     map_=flux,
     center=center,
     width=width,
-    title="Zoom A",
+    title="A",
+    norm=norm_flux,
 )
 
 # inset 2
+center = SkyCoord("16.01148d", "-72.03335d")
+width = 3 * u.arcsec
+draw_zoom(
+    fig,
+    ax=ax_counts,
+    ax_zoom_rect=[
+        insets_counts_left + spacing,
+        insets_bottom,
+        insets_width,
+        insets_width,
+    ],
+    map_=stacked,
+    center=center,
+    width=width,
+    title="B",
+    norm=norm_counts,
+)
+draw_zoom(
+    fig,
+    ax=ax_flux,
+    ax_zoom_rect=[
+        insets_flux_left + spacing,
+        insets_bottom,
+        insets_width,
+        insets_width,
+    ],
+    map_=flux,
+    center=center,
+    width=width,
+    title="B",
+    norm=norm_flux,
+)
+
+# inset 3
 center = SkyCoord("16.003d", "-72.035d")
 width = 8 * u.arcsec
 draw_zoom(
     fig,
     ax=ax_counts,
-    ax_zoom_rect=[0.25, insets_bottom, 0.3, 0.3],
+    ax_zoom_rect=[
+        insets_counts_left + 2 * spacing,
+        insets_bottom,
+        insets_width,
+        insets_width,
+    ],
     map_=stacked,
     center=center,
     width=width,
-    title="Zoom B",
+    title="C",
+    norm=norm_counts,
 )
 draw_zoom(
     fig,
     ax=ax_flux,
-    ax_zoom_rect=[0.7, insets_bottom, 0.3, 0.3],
+    ax_zoom_rect=[
+        insets_flux_left + 2 * spacing,
+        insets_bottom,
+        insets_width,
+        insets_width,
+    ],
     map_=flux,
     center=center,
     width=width,
-    title="Zoom B",
+    title="C",
+    norm=norm_flux,
 )
 
 # norm = simple_norm(residuals.data, stretch="linear", min_cut=-2, max_cut=2)
