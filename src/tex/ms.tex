@@ -237,7 +237,7 @@
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/patches.pdf}
             \caption{
-                Grid of overlapping patches of size 8x8 pixels. The overlap size was chosen to be 2 pixels.
+                Grid of overlapping quadratic patches of size $8\times8$ pixels on top of an example image of the size $128 \times 68$ pixels. The overlap size was chosen to be $2$ pixels, which results in 50 patches in total. The patches are shown translucent, such that the light \enquote{stripes} result from two neighboring overlapping patches, while the small, even lighter, squares result from four patches overlapping at the their corners.
             }
             \label{fig:patches}
         \end{centering}
@@ -251,7 +251,7 @@
     \subsubsection{Patch Normalisation and Dynamic Range}
     Astronomical images typically show a much higher dynamic range compared to natural images. This is mostly due to the existence of point sources, which rarely occur in natural images. Astronomical point sources typically relate to compact bright objects, such as active galactic nuclei at high distances, or binary objects and stars at Galactic distances. In addition the visible matter in the universe is sparse such that astronomical images typically show sparse bright emission on a dark background. 
 
-    To normalise the patches \cite{Zoran2011} proposed to subtract the patch mean before learning the GMM. This leads to the GMM modeling the same morphological features at different levels of contrast as different components. While this proved to be beneficial in the context of reconstructing natural images it does not scale to images with high dynamic range, only at the cost of introducing a lot more components to the GMM, which is unfeasible in practice due to limited availability of training data and computational resources. For this reason we propose the following modified normalisation for the patches:
+    To normalise the patches \cite{Zoran2011} proposed to subtract the patch mean before learning the GMM. This leads to the GMM modeling the same morphological features at different levels of contrast as different components. While this proved to be beneficial in the context of reconstructing natural images it does not scale to images with high dynamic range. Only at the cost of introducing a lot more components to the GMM, which is unfeasible in practice due to limited availability of training data and computational resources. For this reason we propose the following modified normalisation for the patches:
     %
     \begin{equation}
         \label{eq:patch-norm}
