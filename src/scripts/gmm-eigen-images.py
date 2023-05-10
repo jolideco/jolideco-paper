@@ -1,4 +1,5 @@
 import config
+import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 import paths
@@ -32,7 +33,11 @@ idx_sort = np.argsort(w)
 eigen_images = gmm.eigen_images  # v[:, idx_sort]
 
 for idx, ax in enumerate(axes.flat):
-    ax.imshow(eigen_images[idx].reshape((8, 8)))
+    ax.imshow(
+        eigen_images[idx].reshape((8, 8)),
+        origin="lower",
+        cmap="viridis",
+    )
     ax.set_axis_off()
     ax.set_title(f"{idx}", size=8, pad=0.5)
 

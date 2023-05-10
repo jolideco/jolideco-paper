@@ -45,6 +45,17 @@ for x in range(0, image_size[0] - stride, stride):
 
         ax.add_patch(rectangle)
 
+        outline = Rectangle(
+            xy=(x + 0.5, y + 0.5),
+            width=patch_size[0],
+            height=patch_size[1],
+            facecolor="none",
+            edgecolor="white",
+            alpha=0.5,
+            lw=0.2,
+        )
+        ax.add_patch(outline)
+
 rectangle = Rectangle(
     xy=(12.5, 12.5),
     width=patch_size[0],
