@@ -149,10 +149,8 @@
         \mathcal{L}\left( \mathbf{D} | \mathbf{x} \right) = \sum_{j=1}^J \mathcal{C}\left( \mathbf{D_j} | \mathbf{x} \right)
     \end{equation}
 
-    Using Maximum Likelihood Estimation (MLE) we could try to get an estimate $\hat{\mathbf{x}}$ directly, using some optimization procedure. However in general this represents an \textit{ill posed} inverse problem. Estimates for $\mathbf{x}$ which have similar likelihood values $\mathcal{L}(\hat{\mathbf{x}_1})$ look very different from each other and might also look different compared to a given ground truth, if available. Both the convolution operation as well as the level of noise lead to a loss of information in the data which cannot easily be recovered. The likelihood surface shows many local, close-by minima. Depending on the initial estimate for $\mathbf{x}$ and the minimization algorithm the MLE based estimate is likely to only find such a local minimum. This is fundamentally the reason for RL decomposing estimates into point sources, described in the previous section. 
+    Using Maximum Likelihood Estimation (MLE) we could try to get an estimate of $\hat{\mathbf{x}}$ directly, using some optimization procedure. However in general this represents an \textit{ill posed} inverse problem. Estimates for $\mathbf{x}$ which have similar likelihood values $\mathcal{L}(\hat{\mathbf{x}_1})$ look very different from each other and might also look different compared to a given ground truth, if available. Both the convolution operation as well as the exitence of noise lead to a loss of information in the data which cannot easily be recovered. The likelihood surface shows many local, close-by minima. Depending on the initial estimate for $\mathbf{x}$ and the minimization algorithm the MLE based estimate is likely to only find such a local minimum. This is fundamentally the reason for RL decomposing estimates into point sources, described in the previous section. 
     
-    \todo{did you know this sum corresponds to the loop over data sets in machine learning...?}
-
     \subsection{A Posteriori Joint Likelihood}
     When reconstructing images in the context of inverse problems we are operating in a high dimensional parameter space, because each pixel in the image represents an independent parameter in the optimization process. By using prior information we can introduce correlations between the parameters, to reduce the \textit{effective} dimensionality of the problem and guide the optimization process towards unique and more stable solutions.
     
@@ -207,39 +205,40 @@
         \mathcal{P}(\mathbf{x}, \mathbf{k}) = \sum_{n = 1}^N \mathcal{P}_{GMM}(\hat{k}_n | \mathbf{P}_n \mathbf{x})
     \end{equation}
 
-    Where $\mathbf{P}_n$ is a matrix that extracts the $n$-th patch
-    from the image $\mathbf{x}$ to be reconstructed. This way the index $k$ that identifies the most likely GMM component per patch, becomes a discrete hyper-parameter in the model that is optimized along with the image $\mathbf{x}$. 
-    
-    In the case of non-overlapping patches the 
-    
-    \begin{itemize}
-        \item the case of non-overlapping patches is rather simple
-        \item for overlapping patches we have to make a few more approximations
-        \item either we neglect the correlation between overlapping patches
-        \item or we have to optimize the array of $\mathbf{k}$ at the same time, instead of per patch optimization. However optimization on discrete 
-        values is not easily possible in Pytorch. However here is one idea:
-        group the GMM components by similarity and introduce a single continues
-        parameter $z$, which interpolates between similar components.
-        \item Another idea is to use Gumbel Softmax...
-        \item we also compute the mean of the likelihood for the overlapping parts
-    \end{itemize}
+    Where $\mathbf{P}_n$ is a matrix that extracts the $n$-th patch from the image $\mathbf{x}$ to be reconstructed. This way the index $k$ that identifies the most likely GMM component per patch, becomes a discrete hyper-parameter in the model that is optimized along with the image $\mathbf{x}$.
 
-    To use the learned GMM as prior for the reconstruction of another image, the image is split into overlapping patches. For each of the patches the log-likelihood for each of the GMM components is evaluated. The resulting grid of overlapping patches is illustrated in Figure~\ref{fig:patches}.
+    \citep{Zoran2011} found that the reconstruction quality could be improved by working with a grid of overlapping patches. Such a grid is illustrated in Figure~\ref{fig:patches}. However using a grid of overlapping patches makes the interpretation of the prior as likelihood more difficult, because pixels at the corners and edges of patches are counted multiple times. For this we introduce a weighting mask when evaluating the likelihood of the GMM. This mask weights the pixels of the patch by their overlap with the neighboring patch. Overlapping edges are assigned a weight of 1/2, while overlapping corners are assigned a weight of 1/4. We keep the process of choosing the most likely component, however we note that in this case we neglected the correlation between neighbouring patches. As the choice of the GMM component per patch is discrete a simultaneous gradient based optimization of all patches is not easily possible, because we cannot compute gradients across GMM components.
+    This would require a continuous representation or interpolation between GMM components.
+   
+    
+    % \begin{itemize}
+    %     \item the case of non-overlapping patches is rather simple
+    %     \item for overlapping patches we have to make a few more approximations
+    %     \item either we neglect the correlation between overlapping patches
+    %     \item or we have to optimize the array of $\mathbf{k}$ at the same time, instead of per patch optimization. However optimization on discrete 
+    %     values is not easily possible in Pytorch. However here is one idea:
+    %     group the GMM components by similarity and introduce a single continues
+    %     parameter $z$, which interpolates between similar components.
+    %     \item Another idea is to use Gumbel Softmax...
+    %     \item we also compute the mean of the likelihood for the overlapping parts
+    % \end{itemize}
+
+    % To use the learned GMM as prior for the reconstruction of another image, the image is split into overlapping patches. For each of the patches the log-likelihood for each of the GMM components is evaluated. The resulting grid of overlapping patches is illustrated in Figure~\ref{fig:patches}.
 
     \begin{figure}
         \script{patches.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/patches.pdf}
             \caption{
-                Grid of overlapping quadratic patches of size $8\times8$ pixels on top of an example image of the size $128 \times 68$ pixels. The overlap size was chosen to be $2$ pixels, which results in 50 patches in total. The patches are shown translucent, such that the light \enquote{stripes} result from two neighboring overlapping patches, while the small, even lighter squares result from four patches overlapping at the their corners.
+                Grid of overlapping quadratic patches of size $8\times8$~pixels on top of an example image of the size $128 \times 68$~pixels. The overlap size was chosen to be $2$ pixels, which results in 50 patches in total. The patches are shown translucent, such that the horizontal and vertical \enquote{stripes} result from two neighboring overlapping patches, while the small, even lighter squares result from four patches overlapping at the their corners.
             }
             \label{fig:patches}
         \end{centering}
     \end{figure}
 
-    with radio astronomy data. They have shown that the reconstructed image only weakly depends on the choice of the reference data on which the the patch prior is learned. They found equivalent results for GMMs learned on natural images and specifically simulated images of black hole ring structures.
+    % with radio astronomy data. They have shown that the reconstructed image only weakly depends on the choice of the reference data on which the the patch prior is learned. They found equivalent results for GMMs learned on natural images and specifically simulated images of black hole ring structures.
 
-    Using half quadratic splitting and the Wiener filter solution, which is not possible in our case. Instead we choose a direct optimization by relying on differentiable programming later. 
+    % Using half quadratic splitting and the Wiener filter solution, which is not possible in our case. Instead we choose a direct optimization by relying on differentiable programming later. 
     
 
     \subsubsection{Patch Normalisation and Dynamic Range}
@@ -357,10 +356,10 @@
 
     \subsection{Jolideco GMM Library}
     \label{ssec:jolideco-gmm-library}
-    On radio data \cite{Bouman2016} found the results to be mostly independent of the choice of data the GMM prior was learned on. The strength of the GMM prior is its high \textit{expressiveness}, meaning the prior contains a large variety of patch shapes and adapts to the data in the optimization process. However in the low signal-to-noise regime we typically expect a higher dependence of the results on the choice of the data the GMM was learned on. The choice of the prior becomes more important and to avoid introducing a strong bias it should be adapted to the analysis scenario. For this reason and for purposes of testing we learned and provide a selection of GMMs (a \textit{Library}) to be used with the patch prior for download in a \textit{GitHub} repository\footnote{\url{https://github.com/jolideco/jolideco-gmm-library}}.
+    In general the strength of the GMM prior is its high \textit{expressiveness}. This means the prior contains a large variety of structural shapes and has a lot of freedom to adapt to the data in the optimization process. On radio data \cite{Bouman2016} found their results to be mostly independent of the choice of data the GMM prior was learned on. However in the low signal-to-noise regime we typically expect a higher dependence of the results on the choice of the data the GMM was learned on. The choice of the prior becomes more important and to avoid introducing a strong bias it should be adapted to the analysis scenario. For this reason and for purposes of testing we learned and provide a selection of GMMs (a \textit{Library}) to be used with the patch prior for download in a \textit{GitHub} repository\footnote{\url{https://github.com/jolideco/jolideco-gmm-library}}.
     
     \subsubsection{Zoran \& Weiss}
-    As baseline reference we use the original GMM provided by \cite{Zoran2011}. The model was learned from the Berkeley image database \citep{Martin2001} which contains natural images and images of every day scenes and objects. The model was learned by splitting the training images into patches of size 8x8 pixels. This resulted in a training set of $2 \cdot 10^{6}$ patches, which were used to fit a GMM with 200 components. The model is provided by the authors as part of the source code for download\footnote{\url{https://people.csail.mit.edu/danielzoran/epllcode.zip}}. More details of how the model was learned are given in the original publication.
+    As baseline reference we use the original GMM provided by \cite{Zoran2011}. The model was learned from the Berkeley image database \citep{Martin2001} which contains natural images and images of every day scenes and objects. The model was learned by splitting the training images into patches of size 8x8 pixels. This resulted in a training set of $2 \cdot 10^{6}$ patches, which were used to fit a GMM with 200 components. The model is provided by the authors as part of the source code for download\footnote{\url{https://people.csail.mit.edu/danielzoran/epllcode.zip}}. More details of how the model was learned are given in the original publication. This model uses the subtraction of the mean of the patch for normalisation.
     
     \subsubsection{GLEAM Radio Data}
     \label{sssec:gleam-radio-data}
@@ -369,7 +368,7 @@
     In total we extracted \todo{insert number} patches and trained a GMM with 128 components. We used data augmentation by introducing a random shift of the sub-pixel position.
 
     \subsubsection{JWST Cassiopeia A}
-    The James Webb Space Telescope (JWST) is a large, infrared space telescope launched in late 2021. It delivers image data a very high spatial resolution as well as excellent signal to noise ratio. Both of these properties make JWST data an excellent choice for extracting patches for training a GMM. To limit the data reduction effort we relied on a promotional image of the SNR \textit{Cassiopeia A}\footnote{We downloaded the full resolution (4k)  PNG image from \url{https://webbtelescope.org/contents/media/images/2023/121/01GWQBBY77MHGFV3M3N63KDCEJ}}.
+    The James Webb Space Telescope (JWST) is a large, infrared space telescope launched in late 2021. It delivers image data at very high spatial resolution as well as excellent signal to noise ratio. Both of these properties make JWST data an excellent choice for extracting patches for training a GMM. To limit the data reduction effort we relied on a promotional image of the SNR \textit{Cassiopeia A}\footnote{We downloaded the full resolution (4k)  PNG image from \url{https://webbtelescope.org/contents/media/images/2023/121/01GWQBBY77MHGFV3M3N63KDCEJ}}.
     We first converted the image to gray scale using a perceived brightness model \todo{reference skimage...}. Then we split the image into $approx 2$ million patches and learned a GMM with 128 mixture components.
     
     % \subsubsection{NRAO Jets, Jets, Jets}
@@ -396,11 +395,8 @@
     \end{figure}
 
     \subsubsection{Chandra SNRs}
-    \label{sssec:chandra-snrs}. Because of the limited statistics we did not use any oversampling but kept the pixel
-    Astrophysical processes forming the morphological structures are typically self-similar \todo{provide physical argument...I guess it is just the distance distribution?}. Structures appear on multiple angular scales. This means the prior could even be learned from the data itself if sufficiently free of noise. For analysis of Galactic sources with complex morphology and typically radially symmetric features such as supernova remnants (SNRs) we learned a prior from images of the bright \chandra SNRs \textit{Cas A} and \textit{G292.0+01.8}. In total we extracted \todo{insert number} patches and learned a GMM with 128 components.
+    \label{sssec:chandra-snrs}. Because of the limited statistics we did not use any oversampling but kept the pixel Astrophysical processes forming the morphological structures are typically self-similar \todo{provide physical argument...I guess it is just the distance distribution?}. Structures appear on multiple angular scales. This means the prior could even be learned from the data itself if sufficiently free of noise. For analysis of Galactic sources with complex morphology and typically radially symmetric features such as supernova remnants (SNRs) we learned a prior from images of the bright \chandra SNRs \textit{Cas A} and \textit{G292.0+01.8}. In total we extracted \todo{insert number} patches and learned a GMM with 128 components.
 
-
-     
     \subsection{Computational Performance}
     We conduct as series of performance benchmarks (see Appendix?) to asses the scalability of the method to a large number of observations as well as large images. 
 
@@ -411,8 +407,9 @@
         for parallelisation speeds up the standard GMM quite a bit...
         \item Could use a Neural Net for GMM component selection as proposed in \cite{Rosenbaum15}
         \item GPU support via \texttt{Pytorch}
-
     \end{itemize}
+
+    
 
     \subsection{Optimization Strategy}
     Maximising the \aposteriori likelihood defined Eq.\ref{eq:total} with respect to the model parameters $\mathbf{x}$ is a high dimensional optimization problem. To improve the convergence rate of the optimization process we employ the following optimization strategy: the optimization strategy begins with the optimizer viewing $\log{\mathbf{x}}$, and the first step involves running a rough estimate using a uniform prior. This step is optional, but if chosen, the next step involves optimizing the parameters associated with the systematic error described in Eq.~\ref{eq:model-npred-calibration}. Following this, a full optimization is performed using the patch prior, which can be computationally expensive. The optimization algorithm used is ADAM, a stochastic gradient descent method, without decay. Finally, there is an optional step of learning rate scheduling, although so far, a fixed step size value of $\mathrm{lr}=10^{-3}$ has been used.
@@ -633,7 +630,7 @@
             \label{fig:example-fermi-lat}
         \end{centering}
     \end{figure*}
-    As a second example we apply the \jolideco method to data from the Fermi Large Area Telescope (LAT). The LAT is a pair conversion \gammaray telescope on board of the Fermi satellite. It operates in the energy range between \qty[mode = text]{30}{MeV} to  \qty[mode = text]{300}{GeV}. For this example we chose again a Galactic source with complex morphology: the supernova remnant \textit{Vela Junior}. We use 14 years (from 2008 August 4 to 2023 August 4) of \texttt{P8R3\_SOURCE} photons with reconstructed energy in the range of \qty[mode = text]{10}{GeV} to  \qty[mode = text]{2}{TeV} and applied a zenith angle cut of \ang{105}. To preserve as much information as possible on the angular resolution of the instrument we split the data into the four event types \texttt{PSF0}, \texttt{PSF1}, \texttt{PSF2} and \texttt{PSF3}, as defined by the \fermi collaboration. We chose a pixel size of \qty[mode = text]{0.02}{$\deg$}, which corresponds to approximately 1/5th of the size of the PSF in the best event class. For the first part of the data reduction we use the standard \texttt{fermitools} \todo{add version and reference}.
+    As a second example we apply the \jolideco method to data from the Fermi Large Area Telescope (LAT). The LAT is a pair conversion \gammaray telescope on board of the Fermi satellite. It operates in the energy range between \qty[mode = text]{30}{MeV} to  \qty[mode = text]{300}{GeV}. For this example we chose again a Galactic source with complex morphology: the supernova remnant \textit{Vela Junior}. We use 14 years (from 2008 August 4 to 2023 August 4) of \texttt{P8R3\_SOURCE} photons with reconstructed energy in the range of \qty[mode = text]{10}{GeV} to  \qty[mode = text]{2}{TeV} and applied a zenith angle cut of \ang{105}. To preserve as much information as possible on the angular resolution of the instrument we split the data into the four event types \texttt{PSF0}, \texttt{PSF1}, \texttt{PSF2} and \texttt{PSF3}, as defined by the \fermi collaboration. We chose a pixel size of \qty[mode = text]{0.02}{$\deg$}, which corresponds to approximately 1/5th of the size of the PSF in the best event class. For the first part of the data reduction we use the standard \texttt{fermitools v2.2.0} \cite{}.
     
     The \texttt{fermitools} output an energy dependent counts, exposure and PSF cube. To further reduce the data to images we use the \textit{Gammapy} package v1.0 \citep{GammapyZenodov1.0.1, Donath2023}. To compute an image of the expected background emission we rely on the latest Galactic diffuse emission model \texttt{gll\_iem\_v07.fits} and also include nearby sources from the 3FHL catalog \cite{Ajello2017}. We first fit the model components to the data using \textit{Gammapy}, excluding a circular region of radius \qty[mode = text]{1.02}{$\deg$} centered on \textit{Vela Junior}. Finally we reduce this model to an image by summing over the energy dimension. To compute the exposure and PSF image we assume a power law with index $\Gamma=1.77$ \citep{Ajello2017} as a spectral model for \textit{Vela Junior} and integrate over the energy dimension of the cube while weighting with the spectral model.
     
