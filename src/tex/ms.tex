@@ -97,7 +97,18 @@
     
     One last important challenge for deep learning based methods is obtaining uncertainty estimates for the reconstructed image from CNNs. In the limit of Poisson noise it is desirable to trace the full a-postiori likelihood, which is not possible for most network architectures, with the exception of for example normalising flows. This problem could be addressed with Monte Carlo based methods, such as bootstrapping, which further increases the demand on training data and computational resources. For these reasons we decided to choose an approach more close to \enquote{classical} statistical modelling techniques. However we will include elements from ML to represent the prior information on images.
 
+\begin{figure*}
+        \script{model-illustration.py}
+        \begin{centering}
+            \includegraphics[width=\linewidth]{figures/model-illustration.pdf}
+            \caption{
+                Illustration of the forward model of the low counts imaging process. The flux represents the true unknown flux distribution in the sky. The flux is convolved with an image of the PSF, which represents an estimate of the resolution of the imaging instrument. The exposure consists of the superposition of multiple independent observations with different observation time and pointing position. The exposure weighted flux image is degraded by Poisson noise.
+            }
+            \label{fig:model-illustration}
+        \end{centering}
+    \end{figure*}
     \section{Method}
+    
     \subsection{Poisson Joint Likelihood}
     Our goal is to recover an image $\mathbf{x}$ from a set of multiple low counts observations. Most generally we assume our total dataset consists of $J$ individual observations of the same region of the sky, which we jointly model. The assumption is that the underlying, unknown \textit{true} emission image, we are interested in, does not change with time. Under this assumption these datasets can be for example:
 
