@@ -43,6 +43,7 @@ class FigureSizeAA:
     def __init__(self, aspect_ratio=1, width_aa="single-column"):
         self.width = FIGURE_WIDTH_AA[width_aa]
         self.height = self.width / aspect_ratio
+        self.aspect_ratio = aspect_ratio
 
     @property
     def inch(self):
