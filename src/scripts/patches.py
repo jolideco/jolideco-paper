@@ -99,16 +99,16 @@ example_patch_torch = torch.from_numpy(example_patch).float()
 patches = example_patch_torch.reshape(1, 64)
 
 patch_mean = float(example_patch.mean())
-normed = gmm.meta.patch_norm(patches)
 
+normed = gmm.meta.patch_norm(patches)
 loglike = gmm.estimate_log_prob(normed)[0, :]
 idx_sort = torch.argsort(loglike, descending=True)
-print(torch.argmax(loglike))
 
 for idx, idx_gmm in enumerate(idx_sort[:3]):
-    prec = gmm.covariances_numpy[idx_gmm]
-    cleaned = np.matmul(normed.numpy(), prec)
-    patch = cleaned + patch_mean
+    covar = gmm.covariances_numpy[idx_gmm]
+    cleaned = np.matmul(normed.numpy(), covar)
+    patch = cleaned * patch_mean + patch_mean
+
     ax_patch = fig.add_axes([0.3 + idx * (width + 0.02), 0.08, width, width])
     ax_patch.imshow(patch.reshape(patch_size), origin="lower", cmap="viridis")
     ax_patch.set_axis_off()
