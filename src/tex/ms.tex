@@ -124,13 +124,11 @@
     %
     \begin{equation}
         \label{eq:model}
-        \boldsymbol{\lambda}_j(\mathbf{x}) = \mathrm{PSF}_j \circledast \left(\mathbf{E}_j \cdot (\mathbf{x} + \mathbf{B}_j) \right)
+        \boldsymbol{\lambda}_j(\mathbf{x}) = \mathbf{E}_j \cdot \left(\mathrm{PSF}_j \circledast \mathbf{x}\right) + \mathbf{B}_j
     \end{equation}
 
     Where the expected counts $\lambda_j$ are given by the convolution of the unknown 
-    flux image $\mathbf{x}$ with the observation specific point spread function $\mathrm{PSF}_j$. Additionally
-    an observation specific image of the exposure $\mathbf{E}_j$ and background emission $\mathbf{B_j}$ can be
-    optionally taken into account.
+    flux image $\mathbf{x}$ with the observation specific point spread function $\mathrm{PSF}_j$. Additionally an observation specific image of the exposure $\mathbf{E}_j$ and background emission $\mathbf{B_j}$ can be optionally taken into account. A visual representation of the model of the imaging process for a single observation is shown in Figure~\ref{fig:model-illustration}.
 
     Given a single observation $j$ of an unknown flux image
     $\mathbf{x}$ and assuming the noise in each pixel $i$ in the recorded counts image
@@ -210,16 +208,28 @@
     \end{equation}
     \vspace{0.2em}
 
-    As the number of components in the GMM is limited we can do this simply by evaluating the likelihood for each of the components and choose the one with the maximum value of the log-likelihood. To finally evaluate the log-likelihood of the total image we can sum up the maximum log-likelihood values of the individual patches: 
+    As the number of components in the GMM is typically limited to $\mathcal{O}(<10^2)$ we can do this simply by evaluating the likelihood for each of the components and choose the one with the maximum value of the log-likelihood. To finally evaluate the log-likelihood of the total image we can sum up the maximum log-likelihood values of the individual patches: 
     %
     \begin{equation}
+        \label{eq:prior-total}
         \mathcal{P}(\mathbf{x}, \mathbf{k}) = \sum_{n = 1}^N \mathcal{P}_{GMM}(\hat{k}_n | \mathbf{P}_n \mathbf{x})
     \end{equation}
 
-    Where $\mathbf{P}_n$ is a matrix that extracts the $n$-th patch from the image $\mathbf{x}$ to be reconstructed. This way the index $k$ that identifies the most likely GMM component per patch, becomes a discrete hyper-parameter in the model that is optimized along with the image $\mathbf{x}$.
+    Where $\mathbf{P}_n$ is a matrix that extracts the $n$-th patch from the image $\mathbf{x}$ to be reconstructed. This way the index $k$ that identifies the most likely GMM component per patch, becomes a discrete hyper-parameter in the model that is optimized along with the image $\mathbf{x}$ \todo{isn't this empirical Bayes? Should we call it like this?}. The bottom row of Figure~\ref{fig:patches} shows an example of a patch and the same patch represented in the \textit{Eigenbasis} of the covariance matrices of its three most likely GMM components. \todo{Visually the GMM acts as a denoiser...maybe worth a comment...} 
 
-    \citep{Zoran2011} found that the reconstruction quality could be improved by working with a grid of overlapping patches. Such a grid is illustrated in Figure~\ref{fig:patches}. However using a grid of overlapping patches makes the interpretation of the prior as likelihood more difficult, because pixels at the corners and edges of patches are counted multiple times. For this we introduce a weighting mask when evaluating the likelihood of the GMM. This mask weights the pixels of the patch by their overlap with the neighboring patch. Overlapping edges are assigned a weight of 1/2, while overlapping corners are assigned a weight of 1/4. We keep the process of choosing the most likely component, however we note that in this case we neglected the correlation between neighbouring patches. As the choice of the GMM component per patch is discrete a simultaneous gradient based optimization of all patches is not easily possible, because we cannot compute gradients across GMM components.
-    This would require a continuous representation or interpolation between GMM components.
+ \begin{figure}
+        \script{patches.py}
+        \begin{centering}
+            \includegraphics[width=\linewidth]{figures/patches.pdf}
+            \caption{
+                Grid of overlapping quadratic patches of size $8\times8$~pixels on top of an example image of the size $128 \times 68$~pixels. The overlap size was chosen to be $2$ pixels, which results in 50 patches in total. The patches are shown translucent, such that the horizontal and vertical \enquote{stripes} result from two neighboring overlapping patches, while the small, even lighter squares result from four patches overlapping at the their corners. The bottom row shows the red example patch $\mathbf{x}_n$ on the left. The three other patches show the quantity $\Sigma_{k_{GMM}} \mathbf{x}_n$, which is the result of the patch represented in the \textit{Eigenbasis} of the covariance matrices of the 3 most likely GMM components $k_{GMM} = 105, 77, 17$. This example uses the GMM learned from the JWST Cas A image.
+            }
+            \label{fig:patches}
+        \end{centering}
+    \end{figure}
+
+
+    \citep{Zoran2011} found that the reconstruction quality could be improved by working with a grid of overlapping patches. Such a grid is illustrated in Figure~\ref{fig:patches}. However using a grid of overlapping patches makes the interpretation of the prior as likelihood more difficult, because pixels at the corners and edges of patches are counted multiple times. For this we introduce a weighting mask when evaluating the likelihood of the GMM. This mask weights the pixels of the patch by their overlap with the neighboring patch. Overlapping edges are assigned a weight of 1/2, while overlapping corners are assigned a weight of 1/4. We keep the process of choosing the most likely component, however we note that in this case we neglected the correlation between neighbouring patches. As the choice of the GMM component per patch is discrete a simultaneous gradient based optimization of all patches is not easily possible, because we cannot compute gradients across GMM components. This would require a continuous representation or interpolation between GMM components. We propose solutions for this later in the outlook of this manuscript.
    
     
     % \begin{itemize}
@@ -236,34 +246,22 @@
 
     % To use the learned GMM as prior for the reconstruction of another image, the image is split into overlapping patches. For each of the patches the log-likelihood for each of the GMM components is evaluated. The resulting grid of overlapping patches is illustrated in Figure~\ref{fig:patches}.
 
-    \begin{figure}
-        \script{patches.py}
-        \begin{centering}
-            \includegraphics[width=\linewidth]{figures/patches.pdf}
-            \caption{
-                Grid of overlapping quadratic patches of size $8\times8$~pixels on top of an example image of the size $128 \times 68$~pixels. The overlap size was chosen to be $2$ pixels, which results in 50 patches in total. The patches are shown translucent, such that the horizontal and vertical \enquote{stripes} result from two neighboring overlapping patches, while the small, even lighter squares result from four patches overlapping at the their corners.
-            }
-            \label{fig:patches}
-        \end{centering}
-    \end{figure}
-
     % with radio astronomy data. They have shown that the reconstructed image only weakly depends on the choice of the reference data on which the the patch prior is learned. They found equivalent results for GMMs learned on natural images and specifically simulated images of black hole ring structures.
 
     % Using half quadratic splitting and the Wiener filter solution, which is not possible in our case. Instead we choose a direct optimization by relying on differentiable programming later. 
     
 
-    \subsubsection{Patch Normalisation and Dynamic Range}
+    \subsubsection{Image Dynamic Range and Patch Normalisation}
     Astronomical images typically show a much higher dynamic range compared to natural images. This is mostly due to the existence of point sources, which rarely occur in natural images. Astronomical point sources typically relate to compact bright objects, such as active galactic nuclei at high distances, or binary objects and stars at Galactic distances. In addition the visible matter in the universe is sparse such that astronomical images typically show sparse bright emission on a dark background. 
 
-    To normalise the patches \cite{Zoran2011} proposed to subtract the patch mean before learning the GMM. This leads to the GMM modeling the same morphological features at different levels of contrast as different components. While this proved to be beneficial in the context of reconstructing natural images it does not scale to images with high dynamic range. Only at the cost of introducing a lot more components to the GMM, which is unfeasible in practice due to limited availability of training data and computational resources. For this reason we propose the following modified normalisation for the patches:
+    To normalise the patches \cite{Zoran2011} proposed to subtract the patch mean before learning the GMM. This leads to the GMM modeling the same morphological features at different levels of contrast as different components. While this proved to be beneficial in the context of reconstructing natural images it does not scale to images with high dynamic range, because every morphological feature would need to present at many more levels of intensity. While this could be handled by introducing a lot more components to the GMM, it seems unfeasible in practice due to the limited availability of training data and computational resources. For this reason we propose the following modified normalisation for the patches instead:
     %
     \begin{equation}
         \label{eq:patch-norm}
         \tilde{\mathbf{x}}_n = \frac{\mathbf{x}_n - \Bar{\mathbf{x}}_n}{\Bar{\mathbf{x}}_n}
     \end{equation}
     
-    With dividing by the mean of the patch $\Bar{\mathbf{x}}_n$ the structure in the patch becomes independent of the total brightness the patch contains. This results in patches being grouped only by their pixel to pixel correlation structure and not by total contrast. This corresponds the assumption that the structure in the patch is statistically independent of the total flux contained in the patch, which we consider a valid assumption for astronomical images.
-    
+    With dividing by the mean of the patch $\Bar{\mathbf{x}}_n$ the structure in the patch becomes independent of the total brightness the patch contains. This results in patches being grouped only by their pixel to pixel correlation structure and not by total contrast. This corresponds the assumption that the structure in the patch is statistically independent of the total flux contained in the patch, which we consider a valid assumption for astronomical images. This also generalizes to the prior likelihood of the whole image described by Equation~\ref{eq:prior-total}. The value of the prior likelihood becomes independent of the total flux contained in the image.
     
     % The high dynamic range of astronomical images challenges any deconvolution method. To recover point sources accurately it is required to keep correlations with neighbouring pixels low, while for extended source the opposite is true. Ideally those contradicting requirements can be handled with a single flexible prior assumption, which adapts to the data, such as the patch based GMM prior introduced in the previous section.
 
@@ -355,6 +353,8 @@
     
     \end{itemize}
 
+    \todo{This is Bias-Variance trade-off: if all data is used to deconvolve minimizes the statistical error, however the result might be biased... }
+        
     \todo{One could try to estimate a sparse covariance matrix...or approximate it using the GMM covariance...}
 
     \section{Implementation}
