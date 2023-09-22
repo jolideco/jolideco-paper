@@ -39,8 +39,8 @@ filenames_profiles_jolideco = (PATH_RESULTS / "profiles").glob(
     "*/e0102-zoom-a-iter-*-profile-jolideco.fits"
 )
 
-filenames_profiles_counts = (PATH_RESULTS / "profiles").glob(
-    "*/e0102-zoom-a-iter-*-profile-counts.fits"
+filenames_profiles_counts = list(
+    (PATH_RESULTS / "profiles").glob("*/e0102-zoom-a-iter-*-profile-counts.fits")
 )
 
 
@@ -153,9 +153,11 @@ center = SkyCoord("16.017d", "-72.034d")
 
 cutout = flux.cutout(position=center, width=8 * u.arcsec)
 
-norm = simple_norm(cutout.data, stretch="asinh", asinh_a=0.5)
 cutout.plot(
-    ax_image, cmap="viridis", interpolation="gaussian", add_cbar=False, norm=norm
+    ax_image,
+    cmap="viridis",
+    interpolation="gaussian",
+    add_cbar=False,
 )
 
 artist = region.to_pixel(cutout.geom.wcs).as_artist(
@@ -181,8 +183,15 @@ ax_image.add_artist(artist)
 
 
 d_counts = get_mean_and_std(read_profiles(filenames_profiles_counts), smooth_offset=3.0)
+
+profiles = read_profiles(filenames_profiles_counts)
+
+
 plot_profile(
-    ax, d_counts, label="Stacked counts profile", color=config.COLORS["viridis-2"]
+    ax,
+    d_counts,
+    label="Stacked counts profile",
+    color=config.COLORS["viridis-2"],
 )
 # plot_fwhm(ax, d_counts, color=config.COLORS["viridis-2"])
 
@@ -196,8 +205,8 @@ plot_fwhm(ax, d, color=config.COLORS["viridis-0"])
 ax.set_ylabel("Flux / A.U.")
 ax.set_xlabel("Offset (arcsec)")
 ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
-# ax.set_ylim(0, 1.2)
-ax.set_xlim(-1.8, 1.8)
+ax.set_ylim(0, 1.8e-2)
+ax.set_xlim(-1.6, 1.6)
 ax.legend(loc="upper left", frameon=False, fontsize=9)
 
 plt.savefig(paths.figures / "chandra-e0102-zoom-a.pdf", facecolor="w", dpi=300)
