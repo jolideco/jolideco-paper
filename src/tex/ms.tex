@@ -590,11 +590,12 @@
         \end{centering}
     \end{figure*}
 
+    \subsubsection{Image Example}
     As a first application example for real data we choose a set of short exposure observations of the SNR \textit{1E~0102.2–7219} by the \chandra telescope and combine them into a single deep observation using \jolideco and the patch prior learned from JWST data. In total we chose 25 observations\footnote{Same list of observation IDs as for \url{https://chandra.si.edu/photo/2009/e0102/}} taken with  the ACIS instrument and no grating. 
     
-    We reduced the data using \texttt{ciao} v4.15 and a custom \texttt{snakemake} workflow (see also Section~\ref{sec:reproducibility} on reproducibility). For the counts image we selected the energy range from \qty[mode = text]{0.5}{keV} to  \qty[mode = text]{7}{keV} and a pixel size of $0.25$ of the native pixel size of \chandra. This corresponds to an absolute  pixel size of $\approx$\qty[mode = text]{0.125}{$\arcsec$/pixel} or a sampling of $\approx8$ pixels for the $38\%$ containment radius of Chandra's PSF. \chandra's instrument response varies with the observation offset and energy \todo{reference}, so we simulated the PSF for each observation independently using the tool \texttt{marx} \citep{Davis2012} and the \texttt{simulate\_psf} script. As reference spectrum for the PSF simulation we assumed the model derived by \cite{Plucinsky2017}. We converted the spectral from XSPEC to sherpa script using the helper script \texttt{convert\_xspec\_script}. As reported in \cite{Xi2019} the effect of pileup, even for the brightest regions is small ($<5\%$), so we did not include the effect of pileup in our PSF simulations. 
+    We reduced the data using \texttt{ciao} v4.15 and a custom \texttt{snakemake} workflow (see also Section~\ref{sec:reproducibility} on reproducibility). For the counts image we selected the energy range from \qty[mode = text]{0.5}{keV} to  \qty[mode = text]{7}{keV} and a pixel size of $0.25$ of the native pixel size of \chandra. This corresponds to an absolute  pixel size of $\approx$\qty[mode = text]{0.125}{$\arcsec$/pixel} or a sampling of $\approx2$ pixels for the $38\%$ containment radius of Chandra's PSF. \chandra's instrument response varies with the observation offset and energy \todo{reference}, so we simulated the PSF for each observation independently using the tool \texttt{marx} \citep{Davis2012} and the \texttt{simulate\_psf} script. As reference spectrum for the PSF simulation we assumed the model derived by \cite{Plucinsky2017}. We converted the spectral from XSPEC to sherpa script using the helper script \texttt{convert\_xspec\_script}. As reported in \cite{Xi2019} the effect of pileup, even for the brightest regions is small ($<5\%$), so we did not include the effect of pileup in our PSF simulations. 
 
-    We assume a spatially constant background of \qty[mode = text]{1e-5}{cts/pixel} but allow the norm to vary later in the reconstruction process. We assume the exposure to be spatially constant and express its absolute value for each observation as the ratio of observation time with respect to a reference observation. As reference we chose the observation with id 1308. For \jolideco we used the GMM prior learned on the JWST Cas A image. As there is a lot of statistics in the image we additonally used an oversampling factor of 2. For each observation we allowed the background level and position calibration to vary. As reference for the positional shift we also used the observation with the ID 1308.
+    We assume a spatially constant background of \qty[mode = text]{1e-5}{cts/pixel} but allow the norm to vary later in the reconstruction process. We assume the exposure to be spatially constant and express its absolute value for each observation as the ratio of observation time with respect to a reference observation. As reference we chose the observation with id 1308. For \jolideco we used the GMM prior learned on the JWST Cas A image. As there is a lot of statistics in the image we additionally used an oversampling factor of 2. For each observation we allowed the background level and position calibration to vary. As reference for the positional shift we also used the observation with the ID 1308.
     
     Figure~\ref{fig:example-chandra} shows the final result. \jolideco clearly improves both the angular resolution as well as reduces the noise of the counts image. 
 
@@ -605,6 +606,33 @@
     \textbf{Zoom C} shows a another circular filamentous structure of the SNR. In the counts data the structure is barely visible, while the image reconstructed by \jolideco shows a circular structure with a bright emission spot. 
 
     Checking the residual images per observation (not shown here), we noticed that the assumption of the time independence of the source as well the instrument response is not completely fulfilled in this case. We saw the detection efficiency of \chandra changed between the observations as well as that sub-structure in the remnant expands over time. Both effects are previously known and have been reported e.g. in \cite{Xi2019} and \cite{}. Despite the clear improvement in spatial resolution the proper motion of structures in the image might limit the quality of the result. The full analysis example is available at \url{https://github.com/jolideco/jolideco-chandra-examples}
+
+    \newpage
+    \subsubsection{Flux Profile}
+    \begin{figure*}
+        \script{chandra-e0102-zoom-a.py}
+        \begin{centering}
+            \includegraphics[width=\linewidth]{figures/chandra-e0102-zoom-a.pdf}
+            \caption{
+               Flux and counts profile of the Zoom A example region. The associated $2\sigma$ error band estimated using the bootstrap method is shown transparent in the background.
+            }
+            \label{fig:chandra-e0102-zoom-a}
+        \end{centering}
+    \end{figure*}
+    To get a more qualitative measurement of the improvement we compute a flux profile on the image reconstructed by \jolideco. For this we chose a region perpendicular to the filament shown in Zoom A of Figure~\ref{fig:example-chandra}. To estimate the errors we use the bootstrapping method. For each individual observation we sample from the event list with replacement. For each realization of the set of observation we run \jolideco and compute a flux profile on the reconstructed image. This way we obtain a distribution of profiles, which we can use to compute an error band. The result is shown in Figure~\ref{fig:chandra-e0102-zoom-a}.
+
+    We find that the error is 
+
+    We approximately expect the following relation between the width of the counts profile, the PSF and the flux profile:
+
+    \begin{equation}
+        \sigma_{\mathrm{Flux}} = \sqrt{\sigma_{\mathrm{Counts}}^2 - \sigma_{\mathrm{PSF}} ^2}
+    \end{equation}
+
+    With $\sigma_{\mathrm{PSF}} \approx 0.25 \mathrm{arcsec}$ we obtain ..., which is consistent with the values we measured for the profile.
+    
+    
+
 
     % \subsection{Combined \xmm and \chandra Observation}
     % As a second application example we combine data from \chandra and \xmm.
@@ -622,16 +650,6 @@
     % \end{figure*}
 
     \subsection{\fermi Event Types}
-      \begin{figure*}
-        \script{example-fermi-lat.py}
-        \begin{centering}
-            \includegraphics[width=\linewidth]{figures/example-fermi-lat.pdf}
-            \caption{
-                Illustration of the result of the \jolideco method applied to \fermi data of the supernova remnant \textit{RX J0852.0-4622} or \textit{Vela Junior}. The left image shows the counts above \qty[mode = text]{10}{GeV}. The different event classes are stacked into a single image. The image in the center shows the flux reconstructed by the \jolideco method. The image on the right shows the residuals as computed by Equation~\ref{eq:approx-sigma} and smoothed with a \textit{Gaussian} kernel of width 5~pixels. More information on this analysis example can be found on \url{https://github.com/jolideco/jolideco-fermi-examples}. \todo{Move color bar to top and make images larger}
-            }
-            \label{fig:example-fermi-lat}
-        \end{centering}
-    \end{figure*}
     As a second example we apply the \jolideco method to data from the Fermi Large Area Telescope (LAT). The LAT is a pair conversion \gammaray telescope on board of the Fermi satellite. It operates in the energy range between \qty[mode = text]{30}{MeV} to  \qty[mode = text]{300}{GeV}. For this example we chose again a Galactic source with complex morphology: the supernova remnant Vela Junior. We use 14 years (from 2008 August 4 to 2023 August 4) of \endquote{P8R3\_SOURCE} photons with reconstructed energy in the range of \qty[mode = text]{10}{GeV} to  \qty[mode = text]{2}{TeV} and applied a zenith angle cut of \ang{105}. To preserve as much information as possible on the angular resolution of the instrument we split the data into the four event types \enquote{PSF0}, \enquote{PSF1}, \enquote{PSF2} and \enquote{PSF3}, as defined by the \fermi collaboration. We chose a pixel size of \qty[mode = text]{0.02}{$\deg$}, which corresponds to approximately 1/5th of the size of the PSF in the best event class. For the first part of the data reduction we use the standard \texttt{fermitools v2.2.0} \cite{}.
     
     The \texttt{fermitools} output an energy dependent counts, exposure and PSF cube. To further reduce the data to images we use the \textit{Gammapy} package v1.0 \citep{GammapyZenodov1.0.1, Donath2023}. To compute an image of the expected background emission we rely on the latest Galactic diffuse emission model \texttt{gll\_iem\_v07.fits} and also include nearby sources from the 3FHL catalog \citep{Ajello2017}. We first fit the model components to the data using \textit{Gammapy}, excluding a circular region of radius \qty[mode = text]{1.02}{$\deg$} centered on Vela Junior. Finally we reduce this model to an image by summing over the energy dimension. To compute the exposure and PSF image we assume a power law with index $\Gamma=1.77$ \citep{Ajello2017} as a spectral model for Vela Junior and integrate over the energy dimension of the cube while weighting with the spectral model. We chose the GMM patch prior learned from \chandra SNRs described in the Section~\ref{sssec:chandra-snrs}. Because of the limited statistics we did not use any oversampling but keep the pixel size of the counts image. 
@@ -646,6 +664,17 @@
     \end{equation}
 
     Where $\hat{N}$ is the weighted sum of counts from a Gaussian smoothing kernel. As a check we compute a map of residuals based on the predicted counts, the resulting distribution of residual significances per pixel is centered at $\mu=-0.001$ with a width of $\sigma=0.991$, indicating a close agreement with a unit Gaussian distribution. More details of the example \fermi analysis are available at \url{https://github.com/jolideco/jolideco-fermi-examples}
+    
+      \begin{figure*}
+        \script{example-fermi-lat.py}
+        \begin{centering}
+            \includegraphics[width=\linewidth]{figures/example-fermi-lat.pdf}
+            \caption{
+                Illustration of the result of the \jolideco method applied to \fermi data of the supernova remnant \textit{RX J0852.0-4622} or \textit{Vela Junior}. The left image shows the counts above \qty[mode = text]{10}{GeV}. The different event classes are stacked into a single image. The image in the center shows the flux reconstructed by the \jolideco method. The image on the right shows the residuals as computed by Equation~\ref{eq:approx-sigma} and smoothed with a \textit{Gaussian} kernel of width 5~pixels. More information on this analysis example can be found on \url{https://github.com/jolideco/jolideco-fermi-examples}. \todo{Move color bar to top and make images larger}
+            }
+            \label{fig:example-fermi-lat}
+        \end{centering}
+    \end{figure*}
     
     \section{Paper Reproducibility}
     \label{sec:reproducibility}
