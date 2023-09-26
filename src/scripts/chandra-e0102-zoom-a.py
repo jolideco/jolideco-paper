@@ -201,11 +201,11 @@ fwhms_counts = np.array(
 )
 
 ax.text(
-    s=f"$\lambda_J={fwhms_counts.mean():.2f}\pm{fwhms_counts.std():.2f}$ arcsec",
-    x=0.8,
+    s=f"$\lambda_C={fwhms_counts.mean():.2f}\pm{fwhms_counts.std():.2f}$ arcsec",
+    x=0.59,
     y=0.8,
     transform=ax.transAxes,
-    ha="center",
+    ha="left",
     va="top",
     color=config.COLORS["viridis-2"],
 )
@@ -234,10 +234,10 @@ fwhms_jolideco = np.array(
 
 ax.text(
     s=f"$\lambda_J={fwhms_jolideco.mean():.2f}\pm{fwhms_jolideco.std():.2f}$ arcsec",
-    x=0.79,
+    x=0.59,
     y=0.9,
     transform=ax.transAxes,
-    ha="center",
+    ha="left",
     va="top",
     color=config.COLORS["viridis-0"],
 )
@@ -259,7 +259,7 @@ ax.set_ylabel("Normalized Flux")
 ax.set_xlabel("Offset / arcsec")
 ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
 ax.set_ylim(0, 1.8e-2)
-ax.set_xlim(-1.6, 1.6)
+ax.set_xlim(-1.4, 1.4)
 ax.legend(loc="upper left", frameon=False, fontsize=9)
 
 plt.savefig(paths.figures / "chandra-e0102-zoom-a.pdf", facecolor="w", dpi=300)
