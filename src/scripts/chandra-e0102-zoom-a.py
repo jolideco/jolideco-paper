@@ -57,21 +57,38 @@ def read_profiles(filenames):
     return profiles
 
 
-def measure_fwhm(d):
+def measure_fwhm(d, spline_smoothing=0.0):
     from scipy.interpolate import UnivariateSpline
 
-    x = d["x_normed"].quantity.to_value("arcsec")
+    x = d["x_normed"].to_value("arcsec")
     y = d["mean"]
 
     # create a spline of x and blue-np.max(blue)/2
     y_half = y - np.max(y) / 2
-    spline = UnivariateSpline(x, y_half, s=0)
+    spline = UnivariateSpline(x, y_half, s=spline_smoothing)
     r1, r2 = spline.roots()  # find the roots
-    return r1, r2, np.max(y) / 2.0
+    fwhm = r2 - r1
+    return fwhm, r1, r2, np.max(y) / 2.0
 
 
-def plot_fwhm(ax, d, color):
-    r1, r2, y_max_half = measure_fwhm(d)
+def normalize_profile(profile, smooth_offset=0):
+    """Normalize profile to integral"""
+    profile_data = profile.profile
+
+    x = profile.x_ref
+
+    smoothed = gaussian_filter(profile_data, smooth_offset)
+    offset = x[np.argmax(smoothed)]
+
+    return {
+        "x_normed": x - offset,
+        "mean": profile_data,
+    }
+
+
+def plot_fwhm(ax, fwhm, y_max_half, color, subscript, va="top"):
+    r1 = -fwhm / 2
+    r2 = fwhm / 2
 
     ax.annotate(
         text="",
@@ -80,12 +97,18 @@ def plot_fwhm(ax, d, color):
         color=color,
         arrowprops=dict(arrowstyle="<->", color=color),
     )
+
+    if va == "top":
+        y = y_max_half * 0.98
+    else:
+        y = y_max_half * 1.01
+
     ax.text(
         (r1 + r2) / 2,
-        y_max_half * 0.98,
-        f"$\lambda_{{fwhm}}$={r2 - r1:.2f}",
+        y,
+        f"$\lambda_{{{subscript}}}$",
         ha="center",
-        va="top",
+        va=va,
         color=color,
     )
 
@@ -94,7 +117,7 @@ def get_mean_and_std(profiles, smooth_offset=0):
     """Compute mean and std of boostrapped profiles"""
     profile_data = np.array([_.table["profile"].quantity for _ in profiles])
 
-    x = profiles[0].table["x_ref"]
+    x = profiles[0].x_ref
     mean = profile_data.mean(axis=0)
     std = profile_data.std(axis=0)
 
@@ -110,9 +133,9 @@ def get_mean_and_std(profiles, smooth_offset=0):
     }
 
 
-def plot_profile(ax, d, label, color, n_sigma=3):
-    x = d["x_normed"].quantity.to_value("arcsec")
-    ax.plot(x, d["mean"], label=label, color=color)
+def plot_profile(ax, d, label, color, n_sigma=3, ls="-"):
+    x = d["x_normed"].to_value("arcsec")
+    ax.plot(x, d["mean"], label=label, color=color, ls=ls)
     ax.fill_between(
         x,
         d["mean"] - n_sigma * d["std"],
@@ -166,26 +189,35 @@ artist = region.to_pixel(cutout.geom.wcs).as_artist(
 ax_image.add_artist(artist)
 
 
-# ax_image_profile = fig.add_axes([0.7, 0.12, width, 0.1])
-# flux_stripe = flux.interp_to_geom(GEOM_PROFILE)
-# norm = simple_norm(flux_stripe.data, stretch="linear", min_cut=0, max_cut=3.5)
-# # ax_image_profile.set_xlabel("Offset (arcsec)")
-# # ax_image_profile.set_yticks([])
-# # ax_image_profile.set_xticks([-1, 0, 1])
-
-
-# ax_image_profile.imshow(flux_stripe.data.T, cmap="viridis", norm=norm)
-
-
-# fig, axes = plt.subplots(
-#     nrows=1, ncols=1, figsize=figsize.inch, gridspec_kw={"left": 0.01, "right": 0.99}
-# )
-
-
 d_counts = get_mean_and_std(read_profiles(filenames_profiles_counts), smooth_offset=3.0)
 
-profiles = read_profiles(filenames_profiles_counts)
+profiles_counts = read_profiles(filenames_profiles_counts)
 
+fwhms_counts = np.array(
+    [
+        measure_fwhm(normalize_profile(_), spline_smoothing=0.34e-3)[0]
+        for _ in profiles_counts
+    ]
+)
+
+ax.text(
+    s=f"$\lambda_J={fwhms_counts.mean():.2f}\pm{fwhms_counts.std():.2f}$ arcsec",
+    x=0.8,
+    y=0.8,
+    transform=ax.transAxes,
+    ha="center",
+    va="top",
+    color=config.COLORS["viridis-2"],
+)
+
+y_max_half = d_counts["mean"].max() / 2.0
+plot_fwhm(
+    ax,
+    fwhm=fwhms_counts.mean(),
+    y_max_half=y_max_half,
+    color=config.COLORS["viridis-2"],
+    subscript="C",
+)
 
 plot_profile(
     ax,
@@ -193,17 +225,38 @@ plot_profile(
     label="Stacked counts profile",
     color=config.COLORS["viridis-2"],
 )
-# plot_fwhm(ax, d_counts, color=config.COLORS["viridis-2"])
 
 
-d = get_mean_and_std(read_profiles(filenames_profiles_jolideco), smooth_offset=0)
-plot_profile(ax, d, label="Jolideco profile", color=config.COLORS["viridis-0"])
-plot_fwhm(ax, d, color=config.COLORS["viridis-0"])
+profiles_jolideco = read_profiles(filenames_profiles_jolideco)
+fwhms_jolideco = np.array(
+    [measure_fwhm(normalize_profile(_))[0] for _ in profiles_jolideco]
+)
 
-# ax.plot(d["x"] - offset, smoothed)
+ax.text(
+    s=f"$\lambda_J={fwhms_jolideco.mean():.2f}\pm{fwhms_jolideco.std():.2f}$ arcsec",
+    x=0.79,
+    y=0.9,
+    transform=ax.transAxes,
+    ha="center",
+    va="top",
+    color=config.COLORS["viridis-0"],
+)
 
-ax.set_ylabel("Flux / A.U.")
-ax.set_xlabel("Offset (arcsec)")
+
+d = get_mean_and_std(profiles_jolideco, smooth_offset=0)
+y_max_half = d["mean"].max() / 2.0
+plot_profile(ax, d, label="Jolideco profile", color=config.COLORS["viridis-0"], ls="--")
+plot_fwhm(
+    ax,
+    fwhm=fwhms_jolideco.mean(),
+    y_max_half=y_max_half,
+    color=config.COLORS["viridis-0"],
+    subscript="J",
+    va="bottom",
+)
+
+ax.set_ylabel("Normalized Flux")
+ax.set_xlabel("Offset / arcsec")
 ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
 ax.set_ylim(0, 1.8e-2)
 ax.set_xlim(-1.6, 1.6)
