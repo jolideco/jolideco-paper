@@ -24,9 +24,9 @@ jobs:
         with:
           article-cache-number: null
 
-      - name: Revuild the article PDF
+      - name: Rebuild the article PDF
         if: always()
-        id: build
+        id: rebuild
         uses: showyourwork/showyourwork-action@v1
         env:
           SANDBOX_TOKEN: ${{ secrets.SANDBOX_TOKEN }}
