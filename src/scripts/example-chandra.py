@@ -6,6 +6,7 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.visualization import simple_norm
+from gammapy.estimators.utils import find_peaks
 from gammapy.maps import Map
 from regions import RectangleSkyRegion
 
@@ -252,6 +253,14 @@ draw_zoom(
     title="B",
     norm=norm_flux,
 )
+
+cutout_zoom_b = flux.cutout(position=center, width=width)
+
+peaks = find_peaks(cutout_zoom_b, threshold=0.5)
+position = SkyCoord(peaks["ra"], peaks["dec"], unit="deg", frame="icrs")
+
+print(position.to_string("hmsdms"))
+
 
 # inset 3
 center = SkyCoord("16.003d", "-72.035d")
