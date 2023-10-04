@@ -210,13 +210,13 @@
     Where $\mathbf{P}_n$ is a matrix that extracts the $n$-th patch from the image $\mathbf{x}$ to be reconstructed. This way the index $k$ that identifies the most likely GMM component per patch, becomes a discrete hyper-parameter in the model that is optimized along with the image $\mathbf{x}$. The bottom row of Figure~\ref{fig:patches} shows an example of a patch and the same patch represented in the \enquote{Eigenbasis} of the covariance matrices of its three most likely GMM components. Visually the representation of the of the patch in the Eigenbasis of the covariance results in a denoised version of the patch.
     
  \begin{figure}
-        \script{patches.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/patches.pdf}
             \caption{
                 Grid of overlapping quadratic patches of size $8\times8$~pixels on top of an example image of the size $128 \times 68$~pixels. The overlap size was chosen to be $2$ pixels, which results in 50 patches in total. The patches are shown translucent, such that the horizontal and vertical \enquote{stripes} result from two neighboring overlapping patches, while the small, even lighter squares result from four patches overlapping at the their corners. The bottom row shows the red example patch $\mathbf{x}_n$ on the left. The three other patches show the quantity $\Sigma_{k_{GMM}} \mathbf{x}_n$, which is the result of the patch represented in the \textit{Eigenbasis} of the covariance matrices of the 3 most likely GMM components $k_{GMM} = 105, 77, 17$. This example uses the GMM learned from the JWST Cas A image.
             }
             \label{fig:patches}
+            \script{patches.py}
         \end{centering}
     \end{figure}
 
@@ -385,13 +385,13 @@
     % direction is available.
 
     \begin{figure}
-        \script{gmm-eigen-images.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/gmm-eigen-images.pdf}
             \caption{
                 Weighted sum of Eigenimages of the covariance matrices of the first $32$ components of the GMM learned from the JWST Cas A image. The color scale varies between the images, so their contrast is different. 
             }
             \label{fig:gmm-eigen-images}
+            \script{gmm-eigen-images.py}
         \end{centering}
     \end{figure}
 
@@ -498,13 +498,13 @@
     \subsubsection{Comparing Methods}
     %
     \begin{figure*}
-        \script{comparison-scenarios.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/comparison-scenarios.pdf}
             \caption{
                 Comparison of different deconvolution methods and prior assumptions for different selected source scenarios, as described in Section~\ref{subsec:test-datasets}. The simulation of the data for this figure used a fixed background level of $\lambda_{Bkg} = \qty[mode = math]{0.01}{cts/pix}$, a uniform exposure and a Gaussian PSF of width $\sigma_{PSF} = \qty[mode = math]{2}{pix}$, corresponding to the \enquote{Chandra} instrument scenario. The leftmost column shows the simulated counts data and the second most column from the left the underlying ground truth to compare. The other columns show the reconstructed flux by the different methods and prior assumptions for \jolideco. To enhance weak structures the images use an $\arcsinh$ stretching with a scale parameter of $a=0.02$. The stretching is the same for all images. The methods are described in detail in Section~\ref{subsec:methods}. A more detailed representation of the results is available at \url{https://jolideco.github.io/jolideco-comparison}.
             }
             \label{fig:comparison-scenarios}
+            \script{comparison-scenarios.py}
         \end{centering}
     \end{figure*}
     %
@@ -523,13 +523,13 @@
     \subsubsection{Comparing Signal-to-Noise Scenarios}
     %
     \begin{figure*}
-        \script{comparison-signal-noise.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/comparison-signal-noise.pdf}
             \caption{
                 Comparison of the \jolideco method with the GLEAM v0.1 prior for different background levels and signal strength represented by scenario D1-5. The images are grouped by background levels with each column group showing the counts data in the left column and the reconstruction in the right column. The rows show the scenarios D1-5 as described in Section~\ref{subsec:test-datasets}. The background levels correspond to \qty[mode = text]{0.001}{cts / pixel}, \qty[mode = text]{0.01}{cts / pixel} and \qty[mode = text]{0.1}{cts / pixel}. The complete results for the simulations and additional information are available at \url{https://jolideco.github.io/jolideco-comparison}.
             }
             \label{fig:comparison-signal-noise}
+            \script{comparison-signal-noise.py}
         \end{centering}
     \end{figure*}
     %
@@ -541,7 +541,6 @@
     \subsubsection{Comparing Instrument Scenarios}
     %
     \begin{figure*}
-        \script{comparison-instruments.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/comparison-instruments.pdf}
             \caption{
@@ -549,6 +548,7 @@
                 All results are available at \url{https://jolideco.github.io/jolideco-comparison}.
             }
             \label{fig:comparison-instruments}
+            \script{comparison-instruments.py}
         \end{centering}
     \end{figure*}
     %
@@ -564,13 +564,13 @@
     \section{Application Examples}
     %
     \begin{figure*}
-        \script{example-chandra.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/example-chandra.pdf}
             \caption{
                Result of the \jolideco method applied to \chandra data of the SNR \textit{1E~0102.2–7219}. The left large image shows the summed counts from 25 observations. The right large image  shows the result from the \jolideco deconvolution process. The flux is given as counts relative to the reference observation with ID=1308. The panels \textit{Zoom A}, \textit{Zoom B} and \textit{Zoom C} show a zoomed-in version of three example regions in the SNR, marked with the white rectangles in the large images. The colormap and scale used in the zoom insets is the same as used for the larger images.
             }
             \label{fig:example-chandra}
+            \script{example-chandra.py}
         \end{centering}
     \end{figure*}
     %
@@ -591,13 +591,13 @@
     Checking the residual images per observation (not shown here), we noticed that the assumption of the time independence of the source as well the instrument response is not completely fulfilled in this case. We saw the detection efficiency of \chandra changed between the observations as well as that sub-structure in the remnant expands over time. Both effects are previously known and have been reported for example in \cite{Xi2019}. Despite the clear improvement in spatial resolution the proper motion of structures in the image might limit the quality of the result. The full analysis example is available at \url{https://github.com/jolideco/jolideco-chandra-examples}.
 
     \begin{figure*}
-        \script{chandra-e0102-zoom-a.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/chandra-e0102-zoom-a.pdf}
             \caption{
                 The left panel shows the deconvolved flux and counts profile of the region illustrated in the right panel. The associated $3\sigma$ error band is shown transparent in the background. Both profiles are normalized such that they integrate to unity and are aligned such that the position of their peak coincides.
             }
             \label{fig:chandra-e0102-zoom-a}
+            \script{chandra-e0102-zoom-a.py}
         \end{centering}
     \end{figure*}
     
@@ -647,13 +647,13 @@
     shows no systematic effects and a spatially homogeneous distribution of the residual noise. The resulting distribution of residual significances per pixel is centered at $\mu=-0.001$ with a width of $\sigma=0.991$, indicating a close agreement with a unit Gaussian distribution, as expected for a good model of the emission. More details of the example \fermi analysis are available at \url{https://github.com/jolideco/jolideco-fermi-examples}
     
       \begin{figure*}
-        \script{example-fermi-lat.py}
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/example-fermi-lat.pdf}
             \caption{
                 Illustration of the result of the \jolideco method applied to \fermi data of the supernova remnant \textit{RX J0852.0-4622} or \textit{Vela Junior}. The left image shows the counts above \qty[mode = text]{10}{GeV}. The different event classes are stacked into a single image. The image in the center shows the flux reconstructed by the \jolideco method. The image on the right shows the residuals as computed by Equation~\ref{eq:approx-sigma} and smoothed with a \textit{Gaussian} kernel of width 5~pixels. More information on this analysis example can be found on \url{https://github.com/jolideco/jolideco-fermi-examples}.
             }
             \label{fig:example-fermi-lat}
+            \script{example-fermi-lat.py}
         \end{centering}
     \end{figure*}
     
