@@ -397,7 +397,7 @@
     \end{figure}
 
     \subsubsection{Chandra SNRs}
-    \label{sssec:chandra-snrs}. Because of the limited statistics we did not use any oversampling but kept the pixel Astrophysical processes forming the morphological structures are typically self-similar. Structures appear on multiple angular scales. This means the prior could even be learned from the data itself if sufficiently free of noise. For analysis of Galactic sources with complex morphology and typically radially symmetric features such as supernova remnants (SNRs) we learned a prior from images of the bright \chandra SNRs \textit{Cas A} and \textit{G292.0+01.8}. In total we extracted \todo{insert number} patches and learned a GMM with 128 components.
+    \label{sssec:chandra-snrs}. Because of the limited statistics we did not use any oversampling but kept the pixel Astrophysical processes forming the morphological structures are typically self-similar. Structures appear on multiple angular scales. This means the prior could even be learned from the data itself if sufficiently free of noise. For analysis of Galactic sources with complex morphology and typically radially symmetric features such as supernova remnants (SNRs) we learned a prior from images of the bright \chandra SNRs \textit{Cas A} and \textit{G292.0+01.8}. In total we extracted $\approx 10^6$ patches and learned a GMM with 128 components.
 
     \subsection{Computational Performance}
     We conduct as series of performance benchmarks (see Appendix?) to asses the scalability of the method to a large number of observations as well as large images. 
@@ -661,7 +661,7 @@
     
     \section{Paper Reproducibility}
     \label{sec:reproducibility}
-    In order to facilitate reproducibility of our results we provide the source code for the paper and figures at \url{https://github.com/jolideco/jolideco-paper}. The paper can be reproduced using using the tool \texttt{Showyourwork} \citep{Luger2021} and following the instructions in the \texttt{README.md} file in the same repository. All data is available for download from Zenodo \todo{how do we do this exactly...?} or can be reproduced using the custom  \texttt{Snakemake} workflows and repositories provided under the \jolideco GitHub organisation\footnote{\url{https://github.com/jolideco}}. For the Fermi-LAT data reduction we used a custom \texttt{Snakemake} workflow  available at\footnote{\url{https://github.com/adonath/snakemake-workflow-fermi-lat}}. For the Chandra data reduction we used a custom \texttt{Snakemake} workflow available at\footnote{\url{https://github.com/adonath/snakemake-workflow-chandra}}.
+    In order to facilitate reproducibility of our results we provide the source code for the paper and figures at \url{https://github.com/jolideco/jolideco-paper}. The paper can be reproduced using using the tool \texttt{Showyourwork} \citep{Luger2021} and following the instructions in the \texttt{README.md} file in the same repository. All data is available for download from Zenodo or can be reproduced using the custom  \texttt{Snakemake} workflows and repositories provided under the \jolideco GitHub organisation\footnote{\url{https://github.com/jolideco}}. For the Fermi-LAT data reduction we used a custom \texttt{Snakemake} workflow  available at\footnote{\url{https://github.com/adonath/snakemake-workflow-fermi-lat}}. For the Chandra data reduction we used a custom \texttt{Snakemake} workflow available at\footnote{\url{https://github.com/adonath/snakemake-workflow-chandra}}.
         
     
     \section{Summary \& Outlook}
