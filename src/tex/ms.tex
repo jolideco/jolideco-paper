@@ -34,6 +34,7 @@
     \author[0000-0002-0905-7375]{Aneta Siemiginowska}
     \author[0000-0002-3869-7996]{Vinay Kashyap} 
     \author[0000-0000-0000-0000]{David van Dyk}
+    
 
 
 % Abstract with filler text
@@ -674,7 +675,7 @@
     
     To increase the size of the correlation window of the patch prior, \cite{Papyan2015} proposed to evaluate and combine the prior on patches extracted at multiple scales of the image. This is a promising approach to further improve the reconstruction quality for extended sources with low signal to noise ratio.
     
-    To further improve the general expressiveness of the prior \cite{Altekrueger2022} used normalising flows (NF) to model the distribution of patches in the context of computer tomography image reconstruction. Just like a GMM the NF allows to evaluate its likelihood function and therefor construct an explicit, approximate \aposteriori probability for optimization. \todo{However it is also know that NFs struggle with multi-modality...not sure how this affects the proposed approach...}  
+    To further improve the general expressiveness of the prior \cite{Altekrueger2022} used normalising flows (NF) to model the distribution of patches in the context of computer tomography image reconstruction. Just like a GMM the NF allows to evaluate its likelihood function and therefor construct an explicit, approximate \aposteriori probability for optimization. 
     Another promising approach to handle prior information for images has been introduced by \citep{Ulyanov2017} with the so called \enquote{Deep Image Prior}. They showed that a prior structure for an image can be built into a deep neural network, where the architecture of the network encodes the prior information on the correlation structure between neighbouring pixels. The authors showed, that the deep image prior successfully imposes self similarity on the structures in the image. As structures in astronomical images often show sell-similarity this is an interesting approach, that could even be combined with the patch prior.
 
     A second category of improvement is generalizing \jolideco to the energy domain to allow for hyperspectral reconstruction. For instruments such as \fermi the instrument response varies strongly with energy, while it also has limited energy resolution. This introduces correlations between images in neighbouring energy bands. Including the energy domain into the reconstruction will allow for handling these correlations and also open up the use-case of merging \xray data in the spectral domain. Allowing for both  and improved angular as well as energy resolution. 
