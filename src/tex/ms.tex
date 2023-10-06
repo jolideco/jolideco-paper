@@ -398,7 +398,7 @@
 
     \subsubsection{Chandra SNRs}
     \label{sssec:chandra-snrs}. Because of the limited statistics we did not use any oversampling but kept the pixel Astrophysical processes forming the morphological structures are typically self-similar. Structures appear on multiple angular scales. This means the prior could even be learned from the data itself if sufficiently free of noise. For analysis of Galactic sources with complex morphology and typically radially symmetric features such as supernova remnants (SNRs) we learned a prior from images of the bright \chandra SNRs \textit{Cas A} and \textit{G292.0+01.8}. In total we extracted $\approx 10^6$ patches and learned a GMM with 128 components.
-
+    
     \subsection{Computational Performance}
     We conduct as series of performance benchmarks (see Appendix?) to asses the scalability of the method to a large number of observations as well as large images. 
 
@@ -535,7 +535,7 @@
         \end{centering}
     \end{figure*}
     %
-    As a second experiment we explore the dependency of the results on the background level and signal strength. Figure~\ref{fig:comparison-signal-noise} shows the results for the \jolideco method with the GLEAM prior in the scenario D1-5. The background level varies between $\lambda_{Bkg}= 0.01, 0.1$ and \qty[mode = text]{1}{counts/pixel}. As expected the reconstruction quality improves with signal strength. This includes both the variation of the background as well as signal strength. \todo{sensitivity scales as approx signal / sqrt(Bkg)? so what what is the implication? } Visually the method converges to the ground truth for very high signal-to-noise ratio. Once the signal strength becomes very large there is no dependency of the result on the background level anymore. This especially valid for scenario D5
+    As a second experiment we explore the dependency of the results on the background level and signal strength. Figure~\ref{fig:comparison-signal-noise} shows the results for the \jolideco method with the GLEAM prior in the scenario D1-5. The background level varies between $\lambda_{Bkg}= 0.01, 0.1$ and \qty[mode = text]{1}{counts/pixel}. As expected the reconstruction quality improves with signal strength. This includes both the variation of the background as well as signal strength. Visually the method converges to the ground truth for very high signal-to-noise ratio. Once the signal strength becomes very large there is no dependency of the result on the background level anymore. This especially valid for scenario D5
 
     We observe the method struggles to reconstruct a useful signal in the case of very high background (scenarios D1-3). 
 
