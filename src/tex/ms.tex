@@ -491,7 +491,8 @@
         
         \item \textbf{Jolideco (Patch, GLEAM v0.1)}: \jolideco with a patch prior learned on GLEAM data, described in Section~\ref{sssec:gleam-radio-data}. It also uses the standardised patch normalisation as described by Equation~\ref{eq:patch-norm}. We use cycle spinning, a stride of 4 pixels and 2000 \textit{training epochs}. Given 5 observations this results in 10.000 iterations. Which optimizes \enquote{to end} until there is no relevant change in the posterior log-likelihood. In addition we use and upsampling factor of 2.
         
-        \item \textbf{Jolideco (Patch, Zoran-Weiss)}: \jolideco with a patch prior from \cite{Zoran2011} and the mean subtracted patch norm. This is for comparison to the original method and the method used on \cite{Bouman2016}. We use maximum image norm with the maximum values defined by the ground truth \todo{is this fair?}.
+        \item \textbf{Jolideco (Patch, Zoran-Weiss)}: \jolideco with a patch prior from \cite{Zoran2011} and the mean subtracted patch norm. This is for comparison to the original method and the method used on \cite{Bouman2016}. We use a maximum image norm with the maximum values defined by the ground truth.
+        \footnote{This is not completely fair, as it requires knowledge of the brightest expected pixel in $\mathbf{x}$, however in practice this information could be estimated from the brightest pixel in the data and the shape of the PSF.}
     \end{itemize}
 
     We ran the comparison on all combinations of methods, source scenarios, background levels and instrument scenarios. However in the following we only discuss the subset of the results, that we consider the most relevant. The complete set of results is available at \url{https://jolideco.github.io/jolideco-comparison}.
