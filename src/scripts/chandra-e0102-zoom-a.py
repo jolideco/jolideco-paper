@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import config
@@ -14,6 +15,11 @@ from gammapy.estimators import ImageProfile
 from gammapy.maps import Map, WcsGeom
 from regions import RectangleSkyRegion
 from scipy.ndimage import gaussian_filter
+from scipy.optimize import curve_fit
+
+logging.basicConfig(level=logging.INFO)
+
+log = logging.getLogger(__name__)
 
 PATH_RESULTS = paths.jolideco_repo_chandra_e0102_zoom_a / "results" / "e0102-zoom-a"
 
@@ -71,6 +77,42 @@ def measure_fwhm(d, spline_smoothing=0.0):
     return fwhm, r1, r2, np.max(y) / 2.0
 
 
+def gauss(x, norm, x0, sigma):
+    """Gaussian function."""
+    return (
+        norm
+        * np.exp(-((x - x0) ** 2) / (2 * sigma**2))
+        / (sigma * np.sqrt(2 * np.pi))
+    )
+
+
+def baseline(x, a, b):
+    """Baseline function."""
+    return a * x + b
+
+
+def model(x, norm, x0, sigma, a, b):
+    """npred function."""
+    return gauss(x, norm, x0, sigma) + baseline(x, a, b)
+
+
+def least_squares(data, model):
+    """Cash statistic"""
+    return ((data - model) ** 2).sum()
+
+
+def measure_fwhm_gauss(d):
+    """Measure FWHM using a Gaussian model."""
+    x = d["x_normed"].to_value("arcsec")
+    y = d["mean"]
+
+    popt, _ = curve_fit(model, x, y, p0=[1, 0, 1, 0, 0])
+
+    sigma = popt[2]
+    fwhm = 2 * np.sqrt(2 * np.log(2)) * sigma
+    return fwhm
+
+
 def normalize_profile(profile, smooth_offset=0):
     """Normalize profile to integral"""
     profile_data = profile.profile
@@ -106,7 +148,7 @@ def plot_fwhm(ax, fwhm, y_max_half, color, subscript, va="top"):
     ax.text(
         (r1 + r2) / 2,
         y,
-        f"$\lambda_{{{subscript}}}$",
+        f"$\omega_{{{subscript}}}$",
         ha="center",
         va=va,
         color=color,
@@ -193,15 +235,14 @@ d_counts = get_mean_and_std(read_profiles(filenames_profiles_counts), smooth_off
 
 profiles_counts = read_profiles(filenames_profiles_counts)
 
+spline_smoothing = 0.34e-3
+
 fwhms_counts = np.array(
-    [
-        measure_fwhm(normalize_profile(_), spline_smoothing=0.34e-3)[0]
-        for _ in profiles_counts
-    ]
+    [measure_fwhm_gauss(normalize_profile(_)) for _ in profiles_counts]
 )
 
 ax.text(
-    s=f"$w_C={fwhms_counts.mean():.2f}\pm{fwhms_counts.std():.2f}$ arcsec",
+    s=f"$\omega_C={fwhms_counts.mean():.2f}\pm{fwhms_counts.std():.2f}$ arcsec",
     x=0.59,
     y=0.8,
     transform=ax.transAxes,
@@ -229,11 +270,11 @@ plot_profile(
 
 profiles_jolideco = read_profiles(filenames_profiles_jolideco)
 fwhms_jolideco = np.array(
-    [measure_fwhm(normalize_profile(_))[0] for _ in profiles_jolideco]
+    [measure_fwhm_gauss(normalize_profile(_)) for _ in profiles_jolideco]
 )
 
 ax.text(
-    s=f"$w_J={fwhms_jolideco.mean():.2f}\pm{fwhms_jolideco.std():.2f}$ arcsec",
+    s=f"$\omega_J={fwhms_jolideco.mean():.2f}\pm{fwhms_jolideco.std():.2f}$ arcsec",
     x=0.59,
     y=0.9,
     transform=ax.transAxes,
@@ -262,4 +303,6 @@ ax.set_ylim(0, 1.8e-2)
 ax.set_xlim(-1.4, 1.4)
 ax.legend(loc="upper left", frameon=False, fontsize=9)
 
-plt.savefig(paths.figures / "chandra-e0102-zoom-a.pdf", facecolor="w", dpi=300)
+filename = paths.figures / "chandra-e0102-zoom-a.pdf"
+log.info(f"Writing {filename}")
+plt.savefig(filename, facecolor="w", dpi=300)
