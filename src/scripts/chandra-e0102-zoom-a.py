@@ -201,7 +201,7 @@ fwhms_counts = np.array(
 )
 
 ax.text(
-    s=f"$\lambda_C={fwhms_counts.mean():.2f}\pm{fwhms_counts.std():.2f}$ arcsec",
+    s=f"$w_C={fwhms_counts.mean():.2f}\pm{fwhms_counts.std():.2f}$ arcsec",
     x=0.59,
     y=0.8,
     transform=ax.transAxes,
@@ -233,7 +233,7 @@ fwhms_jolideco = np.array(
 )
 
 ax.text(
-    s=f"$\lambda_J={fwhms_jolideco.mean():.2f}\pm{fwhms_jolideco.std():.2f}$ arcsec",
+    s=f"$w_J={fwhms_jolideco.mean():.2f}\pm{fwhms_jolideco.std():.2f}$ arcsec",
     x=0.59,
     y=0.9,
     transform=ax.transAxes,
