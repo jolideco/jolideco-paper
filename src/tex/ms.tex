@@ -412,7 +412,6 @@
         \item We tried the binary search tree as proposed in \cite{Parameswaran2018},
         but without success, most likely because the native \texttt{Pytorch} support
         for parallelization speeds up the standard GMM quite a bit...
-        \item Could use a Neural Net for GMM component selection as proposed in \cite{Rosenbaum15}
         \item GPU support via Pytorch
     \end{itemize}
 
@@ -620,13 +619,13 @@
     To get a more qualitative measurement of the improvement we compute a flux profile on the image of E0102 reconstructed by \jolideco. For this we chose a region perpendicular to the filament shown in Zoom A of Figure~\ref{fig:example-chandra}. To estimate the errors we use the bootstrapping method. For each individual observation we sample from the event list with replacement. For each realization of the set of observation we run \jolideco and compute a flux profile on the reconstructed image. This way we obtain a distribution of profiles, which we can use to compute an error band. For comparison we also compute the profiles and associated errors directly on the stacked bootstrapped images of counts. The result is shown in Figure~\ref{fig:chandra-e0102-zoom-a}.
 
     \vlk{We compute the full-width at half-max (FWHM) of each of the profiles, for both the original counts and the deconvolved intensities, and find that the deconvolved profile is narrower.  For the counts profile, FWHM$_C=0.63 \pm 0.09$~arcsec, where the error bar is obtained by computing the standard deviations over the bootstrap sample; and the deconvolved intensity profile has FWHM$_J=0.56 \pm 0.03$~arcsec.  Note that the PSF itself has a FWHM$_{{\rm PSF}\approx{0.6}}$~arcsec\footnote{See projected radial profiles of the on-axis PSF at \url{https://space.mit.edu/cxc/marx/tests/PSF.html}.  The 1$\sigma$ radius is $\approx$0.26~arcsec (corresponding to 39\% enclosed counts in 2-D), suggesting that FWHM$_{{\rm PSF}}\approx{2.355{\cdot}0.26=0.62}$~arcsec.}.  }
-    The profile computed from the images reconstructed with \jolideco has a much smaller noise level and the peak is much more pronounced. By fitting the profile with a univariate spline and finding its roots we measure the full width half maximum of the curves. We find $\lambda_J=0.56\pm0.03$ for the \jolideco profile and $\lambda_C=0.63\pm0.09$ for the profile computed on the counts image. Assuming that the PSF and the shape of peak of the profile are approximately Gaussian a we expect the following relation between the width of the counts profile, the PSF and the flux profile:
+    The profile computed from the images reconstructed with \jolideco has a much smaller noise level and the peak is much more pronounced. By fitting the profile with a univariate spline and finding its roots we measure the full width half maximum of the curves. We find $w_J=0.56\pm0.03$ for the \jolideco profile and $w_C=0.63\pm0.09$ for the profile computed on the counts image. Assuming that the PSF and the shape of peak of the profile are approximately Gaussian a we expect the following relation between the width of the counts profile, the PSF and the flux profile:
 
     \begin{equation}
-        \lambda_{J} = \sqrt{\lambda_C^2 - \lambda_{\mathrm{PSF}}^2}
+        w_{J} = \sqrt{w_C^2 - \w_{\mathrm{PSF}}^2}
     \end{equation}
 
-    With $\lambda_{\mathrm{PSF}} \approx 0.25 \mathrm{arcsec}$ \footnote{The 38\% containment radius of the Chandra PSF is $\sigma_{39}=2$ native pixels. This corresponds to  see e.g. \url{https://space.mit.edu/cxc/marx/tests/PSF.html}}
+    With $w_{\mathrm{PSF}} \approx 0.25 \mathrm{arcsec}$ \footnote{The 38\% containment radius of the Chandra PSF is $\sigma_{39}=2$ native pixels. This corresponds to  ee e.g. \url{https://space.mit.edu/cxc/marx/tests/PSF.html}}
     we obtain ..., which is consistent with the values we measured for the profile. The profile computed from the images reconstructed with \jolideco show both a smaller width of the profile as well as a much smaller error. 
     
 
@@ -648,11 +647,12 @@
     \subsection{\fermi Event Types}
      We apply the \jolideco method to data from the Fermi Large Area Telescope (LAT). The LAT is a pair conversion \gammaray telescope on board of the Fermi satellite. It operates in the energy range between \qty[mode = text]{30}{MeV} to  \qty[mode = text]{300}{GeV}. For this example we chose  a Galactic source with complex morphology: the supernova remnant Vela Junior. We use 14 years (from 2008 August 4 to 2023 August 4) of \endquote{P8R3\_SOURCE} photons with reconstructed energy in the range of \qty[mode = text]{10}{GeV} to  \qty[mode = text]{2}{TeV} and applied a zenith angle cut of \ang{105}. To preserve as much information as possible on the angular resolution of the instrument we split the data into the four event types \enquote{PSF0}, \enquote{PSF1}, \enquote{PSF2} and \enquote{PSF3}, as defined by the \fermi collaboration. We chose a pixel size of \qty[mode = text]{0.02}{$\deg$}, which corresponds to approximately 1/5th of the size of the PSF in the best event class. For the first part of the data reduction we use the standard \texttt{fermitools v2.2.0} \cite{}.
     
-    The \texttt{fermitools} produce an energy dependent counts, exposure and PSF cube. To further reduce the data to images we use the \textit{Gammapy} package v1.0 \citep{GammapyZenodov1.0.1, Gammapy2023}. To compute an image of the expected background emission we rely on the latest Galactic diffuse emission model \texttt{gll\_iem\_v07.fits} and also include nearby sources from the 3FHL catalog \citep{Ajello2017}. We first fit the model components to the data using \textit{Gammapy}, excluding a circular region of radius \qty[mode = text]{1.02}{$\deg$} centered on Vela Junior. Finally we reduce this model to an image by summing over the energy dimension. To compute the exposure and PSF image we assume a power law with index $\Gamma=1.77$ \citep{Ajello2017} as a spectral model for Vela Junior and integrate over the energy dimension of the cube while weighting with the spectral model. We chose the GMM patch prior learned from \chandra SNRs described in the Section~\ref{sssec:chandra-snrs}. Because of the limited statistics we did not use any oversampling but keep the pixel size of the counts image. 
+    The \texttt{fermitools} produce an energy dependent counts, exposure and PSF cube. To further reduce the data to images we use the \textit{Gammapy} package v1.0 \citep{GammapyZenodov1.0.1, Gammapy2023}. To compute an image of the expected background emission we rely on the latest Galactic diffuse emission model \texttt{gll\_iem\_v07.fits} and also include nearby sources from the 3FHL catalog \citep{Ajello2017}. We first fit the model components to the data using \textit{Gammapy}, excluding a circular region of radius \qty[mode = text]{1.02}{$\deg$} centered on Vela Junior. Finally we reduce this model to an image by summing over the energy dimension. To compute the exposure and PSF image we assume a power law with index $\Gamma=1.77$ \citep{Ajello2017} as a spectral model for Vela Junior and integrate over the energy dimension of the cube while weighting with the spectral model.
     
-    Figure~\ref{fig:example-fermi-lat} shows the data, result and residuals. The \fermi data is sparse, with very limited statistics. \jolideco clearly improves the noise level as well as angular resolution of the data. The calibration of the predicted counts finds different background model norms and positional shifts of order of $<1$ pixel for the different event classes. This way it corrects for systematic errors in the reconstruction of the position. One can see that the reconstruction includes background emission around Vela Junior, indicating that the Galactic diffuse background model is either underestimated in brightness and / or associated with systematic errors. The background estimate could be improved by choosing a larger field of view. However this would also require a larger effort of modeling nearby sources, which we avoided here.
+    We chose the GMM patch prior learned from \chandra SNRs described in the Section~\ref{sssec:chandra-snrs}. Because of the limited statistics we did not use any oversampling but keep the pixel size of the counts image. 
+    Figure~\ref{fig:example-fermi-lat} shows the data, result of the \jolideco method and corresponding residuals. The \fermi data is sparse, with very limited number of signal counts. \jolideco clearly improves the noise level as well as angular resolution of the data. The calibration parameters of the predicted counts converged to different norms for the background model and positional shifts of order of $<1$ pixel for the different event classes. This way \jolideco corrects for systematic errors in the reconstruction of the position. One can see that the reconstruction includes background emission around Vela Junior, indicating that the Galactic diffuse background model is either underestimated in brightness and / or associated with systematic errors. The background estimate could be improved by choosing a larger field of view. However this would also require a larger effort of modeling nearby sources, which we avoided here.
     
-    To further check the quality of the model we compute a map of approximate residual significance defined by:
+    To further check the quality of the reconstructed flux we compute a map of approximate residual significance defined by:
 
     \begin{equation}
         \label{eq:approx-sigma}
@@ -660,7 +660,7 @@
     \end{equation}
 
     Where $\hat{N}$ is the weighted sum of counts from a Gaussian smoothing kernel with $\sigma=5$ pixels. The result is shown in the right panel of Fig.~\ref{fig:example-fermi-lat}. The image
-    shows no systematic effects and a spatially homogeneous distribution of the residual noise. The resulting distribution of residual significances per pixel is centered at $\mu=-0.001$ with a width of $\sigma=0.991$, indicating a close agreement with a unit Gaussian distribution, as expected for a good model of the emission. More details of the \fermi analysis are available at \url{https://github.com/jolideco/jolideco-fermi-examples}
+    shows no systematic effects and a spatially homogeneous distribution of the residual noise. The resulting distribution of residual significances per pixel is centered at $\mu=-0.001$ with a width of $\sigma=0.991$, indicating a close agreement with a standard normal distribution, as expected for a good model of the emission. More details of the \fermi analysis are available at \url{https://github.com/jolideco/jolideco-fermi-examples}
     
       \begin{figure*}
         \begin{centering}
@@ -719,7 +719,7 @@
     \bibliography{bib.bib}
 
     \appendix
-    \section{Source Patterns}
+    \section{Details on Source Patterns}
 
     We have devised elaborate source patterns consisting of point sources and extended sources of different shapes, sizes, orientations, and spacings in order to test deconvolution algorithms for astronomical low counts images.  There are four distinct patterns, illustrated in Figure~\ref{fig:scenarios}, which we denote (1) {\sl Pointilist}, (2) {\sl Asterism}, (3) {\sl Shield}, and (4) {\sl Spiral}.  The construction of each pattern is described below.  All patterns are placed in a $128{\times}128$ pixel image.
 
@@ -761,6 +761,7 @@
         \end{tabular}
         \label{tab:chandra_obs}
         \script{chandra-obs-table.py}
+        \caption{Observation list and details from the Chandra example analysis in Section~\ref{sec:chandra-example}}
     \end{table}
     
 \end{document}
