@@ -591,15 +591,6 @@
     \subsection{Deep \chandra Observation}
     \subsubsection{Image Example}
     First we apply our method to a set of short exposure observations of the SNR \textit{1E~0102.2–7219} by the \chandra telescope and combine them into a single deep observation using \jolideco and the patch prior learned from JWST data. In total, we chose 25 observations\footnote{Same list of observation IDs as for \url{https://chandra.si.edu/photo/2009/e0102/}} taken with  the ACIS instrument and no grating. 
-
-    \begin{table}
-        \centering
-        \begin{tabular}{ |c|c|c| } 
-        \input{output/chandra-obs-table.tex}
-        \end{tabular}
-        \label{tab:chandra_obs}
-        \script{chandra-obs-table.py}
-    \end{table}
     
     We reduced the data using \texttt{ciao} v4.15 and a custom \texttt{snakemake} workflow (see also Section~\ref{sec:reproducibility} on reproducibility). For the counts image we selected the energy range from \qty[mode = text]{0.5}{keV} to  \qty[mode = text]{7}{keV} and a pixel size of $0.25$ of the native pixel size of \chandra. This corresponds to an absolute  pixel size of $\approx$~\qty[mode = text]{0.125}{$\arcsec$/pixel} or a sampling of $\approx2$ pixels for the $38\%$ containment radius of Chandra's PSF. \chandra's instrument response varies with the observation offset and energy \citep{ChandraPOG2022}, so we simulated the PSF for each observation independently using the tool \texttt{marx} \citep{Davis2012} and the \texttt{simulate\_psf} script. As reference spectrum for the PSF simulation we assumed the model derived by \cite{Plucinsky2017}. We converted the spectral script from XSPEC to sherpa using the helper script \texttt{convert\_xspec\_script}. As reported in \cite{Xi2019} the effect of pileup, even for the brightest regions is small ($<5\%$), so we did not include the effect of pileup in our PSF simulations. 
 
@@ -760,5 +751,16 @@
     matching those of the nearest point sources.  This pattern simultaneously tests the ability of deconvolution algorithms to distinguish the disk from the background, and the embedded point sources from the disk.  The linear radiating sources present a different challenge to algorithms which use symmetrical kernels, which usually break such features (often seen in real astronomical images as jets or detector features like streaks or bad CCD columns) into a string of point-like sources.
 
     \paragraph{Spiral}
+
+    \section{Chandra Observation Table}
+    
+    \begin{table}
+    \centering
+        \begin{tabular}{ c|c|c } 
+            \input{output/chandra-obs-table.tex}
+        \end{tabular}
+        \label{tab:chandra_obs}
+        \script{chandra-obs-table.py}
+    \end{table}
     
 \end{document}
