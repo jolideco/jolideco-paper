@@ -62,14 +62,13 @@ fig, axes = plt.subplots(
 )
 
 
-def add_cbar(im, ax, fig, label=""):
+def add_cbar(im, ax, fig):
     """Add cbar to a given axis and figure"""
     bbox = ax.get_position()
     loright = bbox.corners()[-2]
     rect = [loright[0] + 0.005, loright[1], 0.02, bbox.height]
     cax = fig.add_axes(rect)
     cbar = fig.colorbar(im, cax=cax, orientation="vertical")
-    cbar.set_label(label, size=9)
     cbar.set_ticks([0, 10, 100])
     cax.tick_params(labelsize=9)
 
@@ -148,7 +147,17 @@ for idx, scenario_title in enumerate(scenario_titles):
             )
 
         if jdx == len(method_titles) - 1:
-            add_cbar(im, ax, fig, label="Count rate / cts s$^{-1}$")
+            add_cbar(im, ax, fig)
 
+ax.text(
+    x=0.99,
+    y=0.5,
+    s="Count rate / (cts s$^{-1}$)",
+    fontsize=9,
+    ha="center",
+    va="center",
+    transform=fig.transFigure,
+    rotation=90,
+)
 
 plt.savefig(paths.figures / "comparison-scenarios.pdf", dpi=config.DPI)
