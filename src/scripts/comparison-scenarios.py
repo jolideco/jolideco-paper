@@ -148,7 +148,7 @@ for idx, scenario_title in enumerate(scenario_titles):
             )
 
         if jdx == len(method_titles) - 1:
-            add_cbar(im, ax, fig, label="Flux / A.U.")
+            add_cbar(im, ax, fig, label="Count rate / cts s$^{-1}$")
 
 
 plt.savefig(paths.figures / "comparison-scenarios.pdf", dpi=config.DPI)
