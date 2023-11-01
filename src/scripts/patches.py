@@ -1,3 +1,5 @@
+import logging
+
 import config
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,9 +12,12 @@ from astropy.visualization import simple_norm
 from jolideco.priors import GaussianMixtureModel
 from matplotlib.patches import Rectangle
 
+log = logging.getLogger(__name__)
+
 random_state = np.random.RandomState(49837)
 filename = get_pkg_data_filename("galactic_center/gc_msx_e.fits")
 
+highlight_color = "red"
 
 image_size = (128, 68)
 x, y = 10, 40
@@ -68,12 +73,12 @@ rectangle = Rectangle(
     width=patch_size[0],
     height=patch_size[1],
     facecolor="None",
-    edgecolor="tab:red",
+    edgecolor=highlight_color,
     lw=1.5,
 )
 ax.add_patch(rectangle)
 
-ax.text(x=34.5, y=21.5, s="8 x 8 Patch", color="tab:red", ha="center")
+ax.text(x=34.5, y=21.5, s="8 x 8 Patch", color=highlight_color, ha="center")
 
 # example_patch = data[13:21, 13:21]
 example_patch = data[13:21, 31:39]
@@ -81,11 +86,11 @@ example_patch = data[13:21, 31:39]
 width = 0.22
 ax_patch = fig.add_axes([0.05, 0.08, width, width])
 ax_patch.imshow(example_patch, origin="lower", norm=norm, cmap="viridis")
-ax_patch.set_title("Example Patch", size=9, y=-0.4, color="tab:red")
+ax_patch.set_title("Example Patch", size=9, y=-0.4, color=highlight_color)
 ax_patch.set_xticks([])
 ax_patch.set_yticks([])
 for spine in ax_patch.spines.values():
-    spine.set_edgecolor("tab:red")
+    spine.set_edgecolor(highlight_color)
     spine.set_linewidth(1.5)
 
 ax_fig = fig.add_axes([0, 0, 1, 1])
@@ -115,4 +120,6 @@ for idx, idx_gmm in enumerate(idx_sort[:3]):
     ax_patch.set_title(f"$k_{{GMM}}$={idx_gmm}", size=9, y=-0.4)
 
 plt.axis("off")
-plt.savefig(paths.figures / "patches.pdf", facecolor="w", dpi=300)
+filename = paths.figures / "patches.pdf"
+log.info(f"Writing {filename}")
+plt.savefig(filename, facecolor="w", dpi=300)
