@@ -616,8 +616,8 @@
 
     We reduced the data using \texttt{ciao} v4.15 and a custom \texttt{snakemake} workflow (see also Section~\ref{sec:reproducibility} on reproducibility). For the counts image we selected an energy range from \qty[mode = text]{0.5}{keV} to  \qty[mode = text]{7}{keV} and a pixel size of $0.25$ of the native pixel size of \chandra. This corresponds to an absolute  pixel size of $\approx$~\qty[mode = text]{0.125}{$\arcsec$/pixel} or a sampling of $\approx2$ pixels for the $38\%$ containment radius of Chandra's PSF. \chandra's instrument response varies with the observation offset and energy \citep{ChandraPOG2022}, so we simulated the PSF for each observation independently using the \texttt{marx} tool \citep{Davis2012} and the \texttt{simulate\_psf} script. As a reference spectrum for the PSF simulation we assumed the model derived by \cite{Plucinsky2017}. We converted the spectral script from XSPEC to sherpa using the helper script \texttt{convert\_xspec\_script}. As reported in \cite{Xi2019} the effect of pileup, even for the brightest regions is small ($<5\%$), so we did not include the effect of pileup in our PSF simulations. 
 
-    We assume a spatially constant background of \qty[mode = text]{1e-5}{cts/pixel} but allow the normalization to vary later in the reconstruction process. We assume the exposure to be spatially constant and express its absolute value for each observation as the ratio of observation time with respect to a reference observation. As reference we chose the %observation with 
-    \dvd{obsID} 1308. For \jolideco we use the GMM prior learned on the JWST Cas A image. As there are many counts in the image we additionally use an oversampling factor of 2. %For each observation 
+    We assume a spatially constant background of \qty[mode = text]{1e-5}{cts/pixel} but allow the normalization to vary later in the reconstruction process. We assume the exposure to be spatially constant and express its absolute value for each observation as the ratio of observation time with respect to a reference observation. As reference we chose the % 
+    obsID 1308. For \jolideco we use the GMM prior learned on the JWST Cas A image. As there are many counts in the image we additionally use an oversampling factor of 2. %For each observation 
     We allow the background level and position calibration to vary \dvd{among the observations}. As a reference for the positional shift we also use \dvd{obsID} %the observation with the ID 
     1308. Figure~\ref{fig:example-chandra} shows the final result. \jolideco clearly both improves the angular resolution and reduces the noise of the counts image. 
 
@@ -843,7 +843,7 @@
     
     \begin{table}
     \centering
-        \begin{tabular}{ c|c|c|c } 
+        \begin{tabular}{ c|c|c|c|c } 
             \input{output/chandra-obs-table.tex}
         \end{tabular}
         \label{tab:chandra_obs}
