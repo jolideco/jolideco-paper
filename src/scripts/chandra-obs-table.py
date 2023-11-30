@@ -37,7 +37,9 @@ obs_table["Rel. Exposure"] = np.round(obs_table["Exposure"] / exposure_ref, 1)
 
 
 exposure_cum = np.cumsum(obs_table["Exposure"])
-obs_table["Integrated Exposure"] = np.round(exposure_cum / exposure_cum[-1], 2)
+obs_table["Integrated Fractional Exposure"] = np.round(
+    exposure_cum / exposure_cum[-1], 2
+)
 
 content_io = StringIO()
 obs_table.write(content_io, format="latex", overwrite=True)
