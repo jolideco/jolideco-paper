@@ -256,7 +256,7 @@ draw_zoom(
 
 cutout_zoom_b = flux.cutout(position=center, width=width)
 
-peaks = find_peaks(cutout_zoom_b, threshold=0.1)
+peaks = find_peaks(cutout_zoom_b, threshold=0.4)
 position = SkyCoord(peaks["ra"], peaks["dec"], unit="deg", frame="icrs")
 
 print(position.to_string("hmsdms"))
