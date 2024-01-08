@@ -129,7 +129,7 @@ norm_flux = simple_norm(
     flux.data,
     stretch="linear",
     min_cut=0,
-    max_cut=3.5,
+    max_cut=2.0,
 )
 flux.plot(ax=ax_flux, cmap="viridis", interpolation="gaussian", norm=norm_flux)
 add_cbar(ax_flux.images[0], ax_flux, fig, label="Flux / A.U.")
@@ -256,7 +256,7 @@ draw_zoom(
 
 cutout_zoom_b = flux.cutout(position=center, width=width)
 
-peaks = find_peaks(cutout_zoom_b, threshold=0.4)
+peaks = find_peaks(cutout_zoom_b, threshold=0.2)
 position = SkyCoord(peaks["ra"], peaks["dec"], unit="deg", frame="icrs")
 
 print(position.to_string("hmsdms"))
