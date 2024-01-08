@@ -3,6 +3,7 @@ from io import StringIO
 
 import numpy as np
 import paths
+import yaml
 from astropy import units as u
 from astropy.table import Table
 from dateutil import parser
@@ -10,7 +11,7 @@ from dateutil import parser
 logging.basicConfig(level=logging.INFO)
 
 log = logging.getLogger(__name__)
-OBS_ID_REF = 8365
+
 
 colnames = ["Obs ID", "Obs Date", "Exposure"]
 units = ["", "", "ks"]
@@ -19,10 +20,15 @@ obs_table = Table(names=colnames, dtype=dtype, units=units)
 
 
 path = paths.jolideco_repo_chandra_example / "data"
-filenames = sorted(path.glob("*/oif.fits"))
 
-for filename in filenames:
-    obs_id = filename.parent.name
+with (path.parent / "config/config-e0102.yaml").open("r") as fh:
+    config = yaml.safe_load(fh)
+
+obs_ids = config["chandra-data"]["obs_ids"]
+OBS_ID_REF = config["chandra-data"]["obs_id_ref"]
+
+for obs_id in obs_ids:
+    filename = path / f"{obs_id}" / "oif.fits"
     table = Table.read(filename)
     exposure = table.meta["EXPOSURE"] * u.s
     date = parser.parse(table.meta["DATE-OBS"])
