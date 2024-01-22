@@ -41,9 +41,9 @@ obs_table.add_index("Obs ID")
 exposure_ref = obs_table.loc[OBS_ID_REF]["Exposure"]
 obs_table["Rel. Exposure"] = np.round(obs_table["Exposure"] / exposure_ref, 1)
 
-
 exposure_total = np.sum(obs_table["Exposure"])
-obs_table["Frac. Exposure"] = np.round(obs_table["Exposure"] / exposure_total, 2)
+obs_table["Frac. Exposure"] = np.round(100 * obs_table["Exposure"] / exposure_total, 1)
+obs_table["Frac. Exposure"].format = ".1%"
 
 content_io = StringIO()
 obs_table.write(content_io, format="latex", overwrite=True)
