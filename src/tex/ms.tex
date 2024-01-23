@@ -253,7 +253,9 @@
 
 
     \cite{Zoran2011} found that the reconstruction quality could be improved by working with a grid of overlapping patches. This is illustrated in Figure~\ref{fig:patches}. However, using a grid of overlapping patches makes the interpretation of the prior distribution more difficult, because pixels at the corners and edges of patches are counted multiple times. For this reason we introduce a weighting mask when evaluating the GMM prior distribution.
-    This mask weighs the pixels of the patch by their overlap with neighboring patches. Overlapping edges are assigned a weight of 1/2, while overlapping corners are assigned a weight of 1/4, when computing the prior distribution for a patch as given by  Equation~\ref{eq:gmm}. Apart from this the process for choosing the most likely GMM prior component remains unmodified. However, we note that in this case we neglected the prior dependence between neighbouring patches\footnote{That is, we continue to evaluate the log-prior distribution of the full image by summing over the overlapping patches as in Equation~\ref{eq:prior-total}, even though overlapping patches include common pixes and are thus clearly not \aprioir independent.}. As the choice of the GMM component per patch is discrete, a simultaneous gradient based optimization of all patches is not easily possible, because we cannot compute gradients across GMM components. This would require a continuous representation or interpolation between GMM components.
+    This mask weighs the pixels of the patch by their overlap with neighboring patches. Overlapping edges are assigned a weight of 1/2, while overlapping corners are assigned a weight of 1/4, when computing the prior distribution for a patch as given by  Equation~\ref{eq:gmm}.
+    
+    Apart from this, the process for choosing the most likely GMM prior component remains unmodified. However, we note that in this case we neglected the prior dependence between neighbouring patches\footnote{That is, we continue to evaluate the log-prior distribution of the full image by summing over the overlapping patches as in Equation~\ref{eq:prior-total}, even though overlapping patches include common pixes and are thus clearly not \aprioir independent.}. As the choice of the GMM component per patch is discrete, a simultaneous gradient based optimization of all patches is not easily possible, because we cannot compute gradients across GMM components. This would require a continuous representation or interpolation between GMM components.
    
     
     % \begin{itemize}
@@ -372,14 +374,13 @@
     \item \textbf{Bootstrapping Events}. If only one or few observations are available we propose bootstrapping of the events used to compute the counts image(s). This corresponds to splitting a single observation into multiple observations by splitting the single exposure into multiple time intervals. This way one can apply the first proposed method.
     \end{itemize}
 
-    We also experimented with computing the diagonal of Hessian of the posterior distribution at the minimum. However we found this numerically challenging because of the random elements, such as cycle spinning and SGD in the method. Which yields no stable second derivative.
+    We also experimented with computing the diagonal of Hessian of the posterior distribution at the minimum. However we found this numerically challenging because of random the cycle spinning. 
 
-\as{There is no mention of stochastic gradient decent in the description of the method above, so this is the first time you talk about it... maybe it needs to be included when you describe solving the GMM model?}
 
     \section{Implementation}
     \subsection{\jolideco Framework}
     The goal of the reconstruction process is to optimize the a-posteriori likelihood defined by Equation~\ref{eq:total}. Given that there is a parameter for each pixel in the image,  
-    this is a high dimensional optimization problem. Differentiable programming frameworks such as \texttt{PyTorch}~\citep{Pytorch2019} allow for solving high dimensional optimization problems using back-propagation and adapted optimization methods such as stochastic gradient decent (SGD). The latter is also applicable in our case, as we work with multiple observations at the same time, where a subset of the observations represents a \enquote{mini batch} in terms of ML.
+    this is a high dimensional optimization problem. Differentiable programming frameworks such as \texttt{PyTorch}~\citep{Pytorch2019} allow for solving high dimensional optimization problems using back-propagation. They also offer a variety of optimization methods such as stochastic gradient decent (SGD). The latter is also applicable in our case, as we work with multiple observations at the same time, where a subset of the observations represents a \enquote{mini batch} in terms of ML.
 
     We implemented the \jolideco method as an independent Python package, based on \texttt{PyTorch} as the back-end optimizer.  We define a modular, object oriented code structure, to allow parts of the algorithm to be flexible and interchangeable, such as choice of the patch normalisation, the choice of GMM models, optimization methods, and serialisation formats for the reconstruction results as well as the corresponding diagnostic information, such as the trace of the posterior and prior likelihood values. This will simplify future improvement and extension of the package as well as the adoption of \jolideco by the astronomical community. The package is available on the platform GitHub\footnote{\url{https://github.com/jolideco/jolideco}}.
 
@@ -797,7 +798,20 @@
         \end{tabular}
         \label{tab:chandra_obs}
         \script{chandra-obs-table.py}
-        \caption{Observation list and details from the Chandra example analysis in Section~\ref{sec:chandra-example}. The relative exposure columns list the exposure for each observation expressed as the ratio with the exposure of the reference observation with obs ID 8365. The fractional exposure column, lists the exposure as a fraction}
+        \caption{Observation list and details from the Chandra example analysis in Section~\ref{sec:chandra-example}. The relative exposure columns list the exposure for each observation expressed as the ratio with the exposure of the reference observation with obs ID 8365. The fractional exposure column, gives the exposure of each observation as a fraction of the total exposure.}
     \end{table}
-    
+
+    \section{Fermi-LAT Example Without Calibration}
+     \begin{figure*}
+        \begin{centering}
+            \includegraphics[width=\linewidth]{figures/example-fermi-lat.pdf}
+            \caption{
+                Illustration of the \jolideco result for the \fermi data of the supernova remnant \textit{RX J0852.0-4622} or \textit{Vela Junior}. The left image shows the counts above \qty[mode = text]{10}{GeV}. The different event classes are stacked into a single image with bin size $0.02$~degrees. The image in the center shows the flux reconstructed by the \jolideco method. The image on the right shows the standardized residuals as computed by Equation~\ref{eq:approx-sigma} and smoothed with a \textit{Gaussian} kernel of width 5~pixels $\approx 0.1$~degrees, similar to the size of the PSF. More information on this analysis example can be found on \url{https://github.com/jolideco/jolideco-fermi-examples}.
+            }
+            \label{fig:example-fermi-lat-non-calibrated}
+            \script{example-fermi-lat-non-calibrated.py}
+        \end{centering}
+    \end{figure*}
 \end{document}
+
+

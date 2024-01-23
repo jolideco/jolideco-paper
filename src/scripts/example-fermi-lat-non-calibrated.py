@@ -132,4 +132,4 @@ add_cbar(
 # ticks = np.round(norm.inverse(np.linspace(0, 1, 10)), 1)
 # plt.colorbar(ax_npred.images[-1], cax=ax_cbar, ticks=ticks)
 
-plt.savefig(paths.figures / "example-fermi-lat.pdf", dpi=config.DPI)
+plt.savefig(paths.figures / "example-fermi-lat-non-calibrated.pdf", dpi=config.DPI)
