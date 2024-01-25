@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import paths
 from astropy import units as u
-from astropy.io import fits
 from astropy.visualization import simple_norm
 from gammapy.maps import Map
+from matplotlib.gridspec import GridSpec
 
 SMOOTH_WIDTH = 5
 FONT_SIZE = 8
@@ -13,7 +13,7 @@ FONT_SIZE = 8
 plt.rcParams.update({"font.size": FONT_SIZE})
 
 
-def format_axes(ax, hide_yaxis=False):
+def format_axes(ax, hide_yaxis=False, hide_xaxis=False):
     """Format axes for a map plot"""
     lon = ax.coords["glon"]
     lat = ax.coords["glat"]
@@ -33,6 +33,10 @@ def format_axes(ax, hide_yaxis=False):
     if hide_yaxis:
         lat.set_axislabel("")
         lat.set_ticklabel_visible(False)
+
+    if hide_xaxis:
+        lon.set_axislabel("")
+        lon.set_ticklabel_visible(False)
 
 
 def add_cbar(im, ax, fig, label=""):
@@ -55,81 +59,50 @@ path = (
     / "results/vela-junior-above-10GeV-data/jolideco"
 )
 
-filename_jolideco = path / "vela-junior-above-10GeV-data-result-jolideco.fits"
-filenames_data = (path / "input").glob("*.fits")
-filename_npred = path / "vela-junior-above-10GeV-data-npred.fits"
 
-npred = Map.read(filename_npred)
+filenames = path.glob("vela-junior-above-10GeV-residual-psf*.fits")
+filename_calibrated = path.glob("vela-junior-above-10GeV-residual-calibrated-psf*.fits")
 
-aspect_ratio = 3.8
+
+aspect_ratio = 2.0
 figsize = config.FigureSizeAA(aspect_ratio=aspect_ratio, width_aa="two-column")
 
 fig = plt.figure(figsize=figsize.inch)
 
-wcs = npred.geom.wcs
-height = 0.75
-width = height / aspect_ratio
-y_bottom = 0.22
-
-ax_counts = fig.add_axes([0.08, y_bottom, width, height], projection=wcs)
-format_axes(ax_counts)
-
-ax_flux = fig.add_axes([0.37, y_bottom, width, height], projection=wcs)
-format_axes(ax_flux, hide_yaxis=True)
-
-ax_residuals = fig.add_axes([0.69, y_bottom, width, height], projection=wcs)
-format_axes(ax_residuals, hide_yaxis=True)
-
-
-stacked = Map.from_geom(geom=npred.geom)
-
-for filename in filenames_data:
-    counts = Map.read(filename, hdu="COUNTS").sum_over_axes(keepdims=False)
-    stacked.stack(counts)
-
-print(f"Total counts: {stacked.data.sum()}")
-
-stacked.plot(ax=ax_counts, cmap="viridis", interpolation="None")
-add_cbar(ax_counts.images[0], ax_counts, fig, label="Counts")
-
-flux_data = fits.getdata(filename_jolideco, hdu="VELA-JUNIOR")
-flux = Map.from_geom(npred.geom, data=flux_data)
-flux.plot(ax=ax_flux, cmap="viridis", interpolation="gaussian")
-add_cbar(ax_flux.images[0], ax_flux, fig, label="Flux / $(10^{-14} cm^{-2} s^{-1})$")
-
-norm_factor = np.pi * SMOOTH_WIDTH**2
-diff = (stacked - npred).smooth(SMOOTH_WIDTH) * norm_factor
-
-residuals = diff / np.sqrt(npred.smooth(SMOOTH_WIDTH) * norm_factor)
-
-residuals_per_pix = (stacked - npred) / np.sqrt(npred)
-print(f"Mean residuals : {residuals_per_pix.data.mean():.3f}")
-print(f"Sigma residuals: {residuals_per_pix.data.std():.3f}")
-
-norm = simple_norm(residuals.data, stretch="linear", min_cut=-2, max_cut=2)
-residuals.plot(ax=ax_residuals, cmap="RdBu", norm=norm, interpolation="gaussian")
-add_cbar(
-    ax_residuals.images[0],
-    ax_residuals,
-    fig,
-    label="$(N_{Counts} - N_{Pred}) / \sqrt{N_{Pred}}$",
+grid = GridSpec(
+    2,
+    4,
+    figure=fig,
+    left=0.08,
+    right=0.9,
+    bottom=0.12,
+    top=0.95,
+    wspace=0.1,
+    hspace=0.1,
 )
 
-# crop = slice(None)
-# psf_data = dataset_4683["psf"][crop, crop] * norm.vmax
-# size = psf_data.shape[0] * height / counts.data.shape[0]
+norm_factor = np.pi * SMOOTH_WIDTH**2
 
-# ax_psf = fig.add_axes([0.05, 0.7, size, size])
-# ax_psf.imshow(psf_data, cmap=cmap, interpolation="gaussian", norm=norm)
-# ax_psf.set_title("PSF", color="white", fontweight="bold")
-# ax_psf.set_xticks([])
-# ax_psf.set_yticks([])
+for jdx, filenames in enumerate([filenames, filename_calibrated]):
+    for idx, filename in enumerate(filenames):
+        residuals = Map.read(filename) * np.sqrt(norm_factor)
+        ax = fig.add_subplot(grid[jdx, idx], projection=residuals.geom.wcs)
+        norm = simple_norm(residuals.data, stretch="linear", min_cut=-2, max_cut=2)
+        residuals.plot(ax=ax, cmap="RdBu", norm=norm, interpolation="gaussian")
 
-# for spine in ax_psf.spines.values():
-#     spine.set_edgecolor("white")
-#     spine.set_lw(1.2)
+        if jdx == 0:
+            ax.set_title(f"PSF {idx + 1}", pad=4)
 
-# ticks = np.round(norm.inverse(np.linspace(0, 1, 10)), 1)
-# plt.colorbar(ax_npred.images[-1], cax=ax_cbar, ticks=ticks)
+        format_axes(ax, hide_yaxis=idx != 0, hide_xaxis=jdx == 0)
+
+        if idx == 3:
+            im = ax.images[-1]
+            add_cbar(
+                im,
+                ax,
+                fig,
+                label="$(N_{Counts} - N_{Pred}) / \sqrt{N_{Pred}}$",
+            )
+
 
 plt.savefig(paths.figures / "example-fermi-lat-non-calibrated.pdf", dpi=config.DPI)
