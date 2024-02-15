@@ -88,7 +88,7 @@ table_metrics.write(content_io, format="latex", overwrite=True)
 content = content_io.getvalue()
 lines = content.split("\n")
 lines = lines[2:-3]
-# lines.insert(1, "\hline")
+lines.insert(1, "\hline")
 lines.append("\hline")
 content = "\n".join(lines)
 
