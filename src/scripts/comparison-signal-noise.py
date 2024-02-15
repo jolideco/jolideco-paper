@@ -5,7 +5,6 @@ import paths
 from astropy.io import fits
 from astropy.visualization import simple_norm
 from matplotlib import pyplot as plt
-from matplotlib.gridspec import GridSpec
 
 scenario_titles = {
     "D1": {

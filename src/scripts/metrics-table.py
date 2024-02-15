@@ -14,11 +14,11 @@ SCENARIOS = {"point1": "A1", "aster3": "B3", "disk3": "C3", "spiral4": "D4"}
 
 method_titles = {
     # "gt": "Ground Truth",
-    "jolideco-uniform-prior=n=10": "Jolideco\n(Uni, n=10)",
-    "jolideco-uniform-prior=n=1000": "Jolideco\n(Unif., n=1000)",
-    "pylira": "Pylira",
-    "jolideco-patch-prior-zoran-weiss": "Jolideco\n(Zoran-Weiss)",
-    "jolideco-patch-prior-gleam-v0.1": "Jolideco\n(GLEAM v0.1)",
+    "jolideco-uniform-prior=n=10": r"\thead{Jolideco\\(Uni, n=10)}",
+    "jolideco-uniform-prior=n=1000": r"\thead{Jolideco\\(Unif., n=1000)}",
+    "pylira": r"Pylira",
+    "jolideco-patch-prior-zoran-weiss": r"\thead{Jolideco\\(Zoran-Weiss)}",
+    "jolideco-patch-prior-gleam-v0.1": r"\thead{Jolideco\\(GLEAM v0.1)}",
 }
 
 
@@ -88,7 +88,7 @@ table_metrics.write(content_io, format="latex", overwrite=True)
 content = content_io.getvalue()
 lines = content.split("\n")
 lines = lines[2:-3]
-lines.insert(1, "\hline")
+# lines.insert(1, "\hline")
 lines.append("\hline")
 content = "\n".join(lines)
 
