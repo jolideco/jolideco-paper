@@ -520,7 +520,7 @@
     First we compare the performance of the five methods and their differing prior assumptions on the different source scenarios. Figure \ref{fig:comparison-scenarios} shows the results for a selected subset of scenarios, i.e., on A1, B3, C3 and D4. 
 
     ]
-    \begin{table}
+    \begin{table*}
     \centering
         \begin{tabular}{ c|c|c|c|c|c } 
             \input{output/metrics-table.tex}
@@ -528,7 +528,7 @@
         \label{tab:metrics}
         \script{metrics-table.py}
         \caption{Image metrics for the difference source scenarios and methods.}
-    \end{table}
+    \end{table*}
     
     For scenario A1 all methods provide acceptable to excellent results for the isolated point sources in the upper right of the image. This demonstrates all methods take into account the PSF and background models correctly. The exception is method M2 (\jolideconospace, uniform prior, stopped early) 
     %shows an extension for these cases, 
