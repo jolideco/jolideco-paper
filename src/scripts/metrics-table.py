@@ -65,7 +65,7 @@ table = table[selection]
 
 
 table_metrics = Table(
-    names=["Scenario"] + list(method_titles.keys()),
+    names=["Scenario"] + list(method_titles.values()),
     dtype=["S2"] + ["S10"] * len(method_titles),
 )
 
@@ -73,10 +73,10 @@ for scenario in SCENARIOS:
     data = table[table["Scenario"] == scenario]
 
     values = {}
-    for method in method_titles:
+    for method, title in method_titles.items():
         selection = data["Method"] == method
         v = [float(data[selection][name]) for name in ["SSI", "NRMSE"]]
-        values[method] = f"{v[0]:.2f} / {v[1]:.2f}"
+        values[title] = f"{v[0]:.2f} / {v[1]:.2f}"
 
     values["Scenario"] = SCENARIOS[scenario]
     table_metrics.add_row(values)
@@ -89,7 +89,6 @@ content = content_io.getvalue()
 lines = content.split("\n")
 lines = lines[2:-3]
 lines.insert(1, "\hline")
-lines.insert(3, "\hline")
 lines.append("\hline")
 content = "\n".join(lines)
 
