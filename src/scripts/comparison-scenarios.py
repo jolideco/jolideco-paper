@@ -34,7 +34,7 @@ method_titles = {
     "data": "Data",
     "gt": "Ground Truth",
     "jolideco-uniform-prior=n=10": "Jolideco\n(Uni, n=10)",
-    "jolideco-uniform-prior=n=1000": "Jolideco\n(Unif., n=1000)",
+    "jolideco-uniform-prior=n=1000": "Jolideco\n(Uni., n=1000)",
     "pylira": "Pylira",
     "jolideco-patch-prior-zoran-weiss": "Jolideco\n(Zoran-Weiss)",
     "jolideco-patch-prior-gleam-v0.1": "Jolideco\n(GLEAM v0.1)",

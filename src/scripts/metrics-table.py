@@ -15,7 +15,7 @@ SCENARIOS = {"point1": "A1", "aster3": "B3", "disk3": "C3", "spiral4": "D4"}
 method_titles = {
     # "gt": "Ground Truth",
     "jolideco-uniform-prior=n=10": r"\thead[c]{Jolideco\\(Uni, n=10)}",
-    "jolideco-uniform-prior=n=1000": r"\thead[c]{Jolideco\\(Unif., n=1000)}",
+    "jolideco-uniform-prior=n=1000": r"\thead[c]{Jolideco\\(Uni., n=1000)}",
     "pylira": r"Pylira",
     "jolideco-patch-prior-zoran-weiss": r"\thead[c]{Jolideco\\(Zoran-Weiss)}",
     "jolideco-patch-prior-gleam-v0.1": r"\thead[c]{Jolideco\\(GLEAM v0.1)}",
