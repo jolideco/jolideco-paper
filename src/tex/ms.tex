@@ -14,7 +14,7 @@
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator{\arcsinh}{arcsinh}
 
-\renewcommand\theadalign{bc}
+%\renewcommand\theadalign{bc}
 
 \newcommand{\chandra}{\textit{Chandra}~}
 \newcommand{\chandranospace}{\textit{Chandra}}
@@ -531,7 +531,7 @@
         \end{tabular}
         \label{tab:metrics}
         \script{metrics-table.py}
-        \caption{Image metrics for the difference source scenarios and methods.}
+        \caption{Image metrics for the difference source scenarios and methods shown in Figure~\ref{fig:comparison-scenarios}. The first number in a cell shows the structural similarity index (the closer to one the better ) and the second number shows the normalized root mean square (the lower the better).}
     \end{table*}
     
     For scenario A1 all methods provide acceptable to excellent results for the isolated point sources in the upper right of the image. This demonstrates all methods take into account the PSF and background models correctly. The exception is method M2 (\jolideconospace, uniform prior, stopped early) 
