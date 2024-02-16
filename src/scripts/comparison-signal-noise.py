@@ -13,19 +13,19 @@ scenario_titles = {
     },
     "D2": {
         "name": "spiral2",
-        "plot": {"max_cut": 30.0, "asinh_a": 0.02},
+        "plot": {"max_cut": 30.0, "asinh_a": 0.001},
     },
     "D3": {
         "name": "spiral3",
-        "plot": {"max_cut": 30.0, "asinh_a": 0.02},
+        "plot": {"max_cut": 30.0, "asinh_a": 0.001},
     },
     "D4": {
         "name": "spiral4",
-        "plot": {"max_cut": 100.0, "asinh_a": 0.02},
+        "plot": {"max_cut": 100.0, "asinh_a": 0.005},
     },
     "D5": {
         "name": "spiral5",
-        "plot": {"max_cut": 5000.0, "asinh_a": 0.02},
+        "plot": {"max_cut": 5000.0, "asinh_a": 0.00002},
     },
 }
 
@@ -125,7 +125,7 @@ for idx, scenario_title in enumerate(scenario_titles):
         else:
             data = read_flux(scenario, bg, instrument)
 
-        norm_kwargs["max_cut"] = np.percentile(data, 99.9)
+        # norm_kwargs["max_cut"] = np.percentile(data, 99.9)
         norm = simple_norm(data, stretch="asinh", min_cut=0, **norm_kwargs)
         ax = axes[idx, jdx]
         ax.imshow(data, cmap="viridis", origin="lower", norm=norm)
