@@ -11,6 +11,7 @@ from astropy.utils.data import get_pkg_data_filename
 from astropy.visualization import simple_norm
 from jolideco.priors import GaussianMixtureModel
 from matplotlib.patches import Rectangle
+from scipy import linalg
 
 log = logging.getLogger(__name__)
 
@@ -101,17 +102,28 @@ gmm = GaussianMixtureModel.from_registry("jwst-cas-a-v0.1")
 
 example_patch_torch = torch.from_numpy(example_patch).float()
 
-patches = example_patch_torch.reshape(1, 64)
+example_patch_torch_flat = example_patch_torch.reshape(1, 64)
 
 patch_mean = float(example_patch.mean())
 
-normed = gmm.meta.patch_norm(patches)
+normed = gmm.meta.patch_norm(example_patch_torch_flat)
 loglike = gmm.estimate_log_prob(normed)[0, :]
 idx_sort = torch.argsort(loglike, descending=True)
 
+eigenvals_max = 5
+
 for idx, idx_gmm in enumerate(idx_sort[:3]):
-    covar = gmm.covariances_numpy[idx_gmm]
-    cleaned = np.matmul(normed.numpy(), covar)
+    w, v = linalg.eigh(gmm.covariances_numpy[idx_gmm])
+
+    idx_sort = np.argsort(w)[::-1]
+    v = v[:, idx_sort]
+    basis = v[:, :eigenvals_max]
+
+    weights = np.matmul(basis.T, normed.numpy().T)
+    cleaned = np.matmul(basis, weights)
+
+    # covar = gmm.covariances_numpy[idx_gmm]
+    # cleaned = np.matmul(normed.numpy(), covar)
     patch = cleaned * patch_mean + patch_mean
 
     ax_patch = fig.add_axes([0.3 + idx * (width + 0.02), 0.08, width, width])
