@@ -110,7 +110,7 @@ normed = gmm.meta.patch_norm(example_patch_torch_flat)
 loglike = gmm.estimate_log_prob(normed)[0, :]
 idx_sort = torch.argsort(loglike, descending=True)
 
-eigenvals_max = 5
+eigenvals_max = 6
 
 for idx, idx_gmm in enumerate(idx_sort[:3]):
     w, v = linalg.eigh(gmm.covariances_numpy[idx_gmm])
