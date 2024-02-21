@@ -36,27 +36,36 @@
 \begin{document}
 
 % Title
-    \title{%Joint Likelihood Deconvolution of Astronomical Images in the Presence of Poisson Noise}
-    Jolideco: A Simultaneous Deconvolution of Multiple Images in the Presence of Poisson Noise}
+    \title{Joint Deconvolution of Astronomical Images in the Presence of Poisson Noise}
+    %Jolideco: A Simultaneous Deconvolution of Multiple Images in the Presence of Poisson Noise}
 
 % Author list
     \author[0000-0003-4568-7005]{Axel Donath}
+    \affil{Center for Astrophysics $|$ Harvard \& Smithsonian \\ Cambridge MA 02138 USA}
     \author[0000-0002-0905-7375]{Aneta Siemiginowska}
-    \author[0000-0002-3869-7996]{Vinay Kashyap} 
-    \author[0000-0002-0816-331X]{David van Dyk}
+    \affil{Center for Astrophysics $|$ Harvard \& Smithsonian \\ Cambridge MA 02138 USA}
+    \author[0000-0002-3869-7996]{Vinay L.\ Kashyap} 
+    \affil{Center for Astrophysics $|$ Harvard \& Smithsonian \\ Cambridge MA 02138 USA}
+    \author[0000-0002-0816-331X]{David A.\ van Dyk}
+    \affil{Department of Mathematics, Imperial College London \\ London SW7 2AZ UK}
     \author[0000-0003-4428-7835]{Douglas Burke}
-    
+    \affil{Center for Astrophysics $|$ Harvard \& Smithsonian \\ Cambridge MA 02138 USA}
+
 
 
 % Abstract with filler text
     \begin{abstract}
     
-        We present a new method for JOint LIkelihood DECOnvolution (\jolideconospace) of a set of astronomical observations of the same sky region in the presence of Poisson noise. 
-        The observations may be obtained from different missions with  different resolution, and different point spread functions. 
+        We present a new method for joint likelihood deconvolution (\jolideconospace) of a set of astronomical observations of the same sky region in the presence of Poisson noise. 
+        The observations may be obtained from different instruments
+         with  different resolution, and different point spread functions. 
         \jolideco reconstructs a single flux image 
         %from the set of observations 
         %and given models for the point spread function (PSF) per observation, 
-        by optimizing the posterior distribution based on the joint Poisson likelihood of all observations under a patch-based image prior. The patch prior is parameterised via a Gaussian Mixture model which we train on high-signal-to-noise astronomical images, including data from the  James Webb Telescope and the GLEAM radio survey. This prior favors correlation structures among the reconstructed pixel intensities that are characteristic of those observed in the astronomical images used to train the prior, but is not informative for the mean or scale of the reconstruction. By applying the method to simulated data we show that the combination of multiple observations and the patch-based prior leads to much improved reconstruction quality in many different source scenarios and signal to noise regimes. We demonstrate that \jolideco yields superior reconstruction quality relative to alternative standard methods such as the Richardson-Lucy method. We illustrate the results of \jolideco\ applied to example data from the \chandra observatory and the \ferminospace. By comparing the measured width of a counts based and the corresponding \jolideco flux profile we find the deconvolved width to be consistent with the theoretical expectation derived from the known width of the PSF.
+        by optimizing the posterior distribution based on the joint Poisson likelihood of all observations under a patch-based image prior. The patch prior is parameterised via a Gaussian Mixture model which we train on high-signal-to-noise astronomical images, including data from the  James Webb Telescope and the GLEAM radio survey. This prior favors correlation structures among the reconstructed pixel intensities that are characteristic of those observed in the %astronomical 
+        training images. 
+        % used to train the prior. 
+        It is, however, not informative for the mean or scale of the reconstruction. By applying the method to simulated data we show that the combination of multiple observations and the patch-based prior leads to much improved reconstruction quality in many different source scenarios and signal to noise regimes. We demonstrate that \jolideco yields superior reconstruction quality relative to alternative standard methods such as the Richardson-Lucy method. We illustrate the results of \jolideco\ applied to example data from the \chandra observatory and the \ferminospace. By comparing the measured width of a counts based and the corresponding \jolideco flux profile we find the deconvolved width to be consistent with the theoretical expectation derived from the known width of the PSF.
     \end{abstract}
 
     % Main body with filler text
@@ -434,7 +443,7 @@
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/gmm-eigen-images.pdf}
             \caption{
-                Weighted sum of Eigenimages of the covariance matrices of the first $32$ components of the GMM learned from the JWST Cas A image. The color scale varies between the images, so their contrast is different. 
+                Sum of Eigenimages weighted by their corresponding Eigenvalue of the covariance matrices of the first $32$ components of the GMM learned from the JWST Cas A image. The color scale varies between the images, so their contrast is different. 
             }
             \label{fig:gmm-eigen-images}
             \script{gmm-eigen-images.py}
@@ -478,8 +487,8 @@
     %     \item {\enquote{\bf XMM}:} an instrument with worse angular resolution, but higher effective area. We assume a Gaussian PSF of sizes $\sigma = 6$ pixels and an effective area of \qty[mode=text]{5}{A.U.}.
     % \end{itemize}
     
-    The ground truth and corresponding expected counts for all combinations of source and instrument scenarios are shown in Figure~\ref{fig:scenarios}. The details of the locations and brightness of each component is listed in Table~\ref{tab:scenarios} \dvd{I think this table is missing}. We assume a constant background with varying levels of $\lambda_{Bkg}= 0.001, 0.01$ and \qty[mode = text]{0.1}{counts/pixel}. 
-
+    The ground truth and corresponding expected counts for all combinations of source and instrument scenarios are shown in Figure~\ref{fig:scenarios}. 
+    
     \begin{figure*}
         \centering\includegraphics{figures/scenarios.pdf}
         \caption{Illustration of the expected counts for the different source scenarios we used to generate test datasets. The source patterns shown are for the {\sl (A)}  {\tt points}, {\sl (B) {\tt asterism}}, {\sl (C)} {\tt shield}, and {\sl (D)} {\tt spiral} cases (see Section~\ref{sec:app:A}. For the \chandra instrument scenario we convolve the ground truth image with a narrow Gaussian shaped PSF of width $\sigma=2$~pix. For the \xmm scenario we used a Gaussian shaped PSF with a width of $\sigma=6$~pix and an effective area that is five times larger than that of \chandranospace. All images are of size $128{\times}128$ pixels.
@@ -521,7 +530,7 @@
         \end{centering}
     \end{figure*}
     %
-    First we compare the performance of the five methods and their differing prior assumptions on the different source scenarios. Figure~\ref{fig:comparison-scenarios} shows the results for a selected subset of scenarios A1, B3, C3 and D4. For quantitative comparison we list the corresponding values of the structural similarity index (SSI, \cite{Wang2004}) and the normalized root mean-squared error (NRMSE) in Table~\ref{tab:metrics}.
+    First we compare the performance of the five methods and their differing prior assumptions on the different source scenarios. Figure~\ref{fig:comparison-scenarios} shows the results for a selected subset of scenarios A1, B3, C3 and D4. For quantitative comparison we list the corresponding values of the structural similarity index (SSI, \cite{Wang2004}) and the normalized root mean-squared error (NRMSE)\footnote{We use the definition of $NRMSE = \frac{||\mathbf{x}_{GT} - \mathbf{x}||}{||\mathbf{x}_{GT}||}$, where $||$ is the Frobenius norm.} in Table~\ref{tab:metrics}.
     
     For scenario A1 all methods provide acceptable to excellent results for the isolated point sources in the upper right of the image. This demonstrates all methods take into account the PSF and background models correctly. The exception is method M2 (\jolideconospace, uniform prior, stopped early) 
     %shows an extension for these cases, 
@@ -558,7 +567,7 @@
         \end{centering}
     \end{figure*}
     %
-    As a second experiment we explore the dependency of the results on the background level and signal strength. Figure~\ref{fig:comparison-signal-noise} shows the results for the \jolideco method with the GLEAM prior in Scenario D1-D5. The background level varies between $\lambda_{Bkg}= 0.01, 0.1$ and \qty[mode = text]{1}{counts/pixel}. As expected, the reconstruction quality improves with higher signal strength and lower background level. Visually the method converges to the ground truth for very high signal-to-noise ratio. Indeed with very high signal strength there is no dependency of the result on the background level, particularly in Scenario~D5. \dvd{The point sources seem very weak in D5. Is this a plotting issue?} On the other hand, the method struggles to reconstruct a useful signal in the case of very high background (scenarios D1-3). 
+    As a second experiment we explore the dependency of the results on the background level and signal strength. Figure~\ref{fig:comparison-signal-noise} shows the results for the \jolideco method with the GLEAM prior in Scenario D1-D5. The background level varies between $\lambda_{Bkg}= 0.01, 0.1$ and \qty[mode = text]{1}{counts/pixel}. As expected, the reconstruction quality improves with higher signal strength and lower background level. Visually the method converges to the ground truth for very high signal-to-noise ratio. Indeed with very high signal strength there is no dependency of the result on the background level, particularly in Scenario~D5. On the other hand, the method struggles to reconstruct a useful signal in the case of very high background (scenarios D1-3). 
 
 
     \subsubsection{Comparing Instrument Scenarios}
@@ -579,7 +588,7 @@
 
     Using the data from the \enquote{Chandra} scenario alone results in a good reconstruction in all variations of scenario D. As expected the reconstruction quality improves for higher signal to noise ratio. 
     
-    Using only the data from the \enquote{XMM} scenario results in lower quality reconstructions, due to the lower angular resolution. However, we find that the spiral arm structure is reconstructed at all levels of signal strength, even when barely visible by eye. The ring structure is sharpened considerably in all cases as well. The near-by point sources on the left and right of the spiral arm structure cannot be separated into individual point sources, but appear with a higher signal-to-noise ratio \dvd{can you reference the scenario you are referring to?}.  This a similar situation as in the A1 point source scenario, when sources are to close by.
+    Using only the data from the \enquote{XMM} scenario results in lower quality reconstructions, due to the lower angular resolution of the data. However, we find that the spiral arm structure is reconstructed at all levels of signal strength, even when barely visible by eye. The ring structure is sharpened considerably in all cases as well. The near-by point sources on the left and right of the spiral arm structure cannot be separated into individual point sources, but remain blurred along the direction of their neighbours. This a similar situation as in the lower left of the image in the A1 point source scenario, when sources are to close by.
     
     Combining the data results in the best reconstruction quality. The addition of the lower resolution \enquote{XMM} data does not negatively affect the quality of the overall reconstruction. When comparing Scenario~D5 we see that the \enquote{Chandra} reconstruction shows a very good reconstruction of the spiral structure but shows speckles in the surrounding ring. The latter suggests that the GMM prior is not strong enough to maintain the pixel to pixel correlations in the case of high signal strength. The strength of the prior could be increased with the $\beta$ parameter, but for this study we use the default settings and do not tweak individual parameters. The speckly behaviour is not observed in the \enquote{XMM} case, where the reconstruction of the ring is smoother. In this case the correlation between pixels that are further apart is stronger because of the larger correlation PSF. However, the reconstruction of the spiral structure in the center shows visual artifacts, with the individual arms not completely separated. The joint reconstruction shows the positive qualities of both individual reconstructions. This confirms the results from \cite{Ingaramo2014}, where the authors found that combining multiple measurements for deconvolution with RL to be a \textquote{general tool for combining images with complementary strengths}.
 
@@ -610,9 +619,9 @@
     
     \textbf{Zoom A} of Figure~\ref{fig:example-chandra} details an example of a filament structure. \jolideco maintains the extended structure along the filament, while sharpening in the perpendicular direction. Looking at the upper right corner one can also see that weak background emission is suppressed, improving the contrast of the image.
     
-    \textbf{Zoom B} shows the region around the central compact object of the SNR. While the emission is barely visible in the counts image it is clearly evident above the background in the \jolideco reconstruction. The remaining visible extension in the point source is encoded in the JWST patch prior, which also shows a finite extension for point sources. We note that, as illustrated in Section~\ref{subsec:methods} for Scenario~A, the remaining extension of the point source after deconvolution may be smaller if the source is brighter. We estimate the position of the point source by finding the brightest pixel in the map, obtaining $\alpha_{J2000}=01^h04^m02.75^s$ and $\delta_{J2000}=-72^d02^m00.19^s$ which is consistent with the value reported by \cite{Long2020}, which 
+    \textbf{Zoom B} shows the region around the putative central compact object of the SNR (\cite{Vogt2018}, \cite{Hebbar2020}, but \cite{Long2020}). While the emission is barely visible in the counts image it is clearly evident above the background in the \jolideco reconstruction. The reconstruction leaves a visible extension in the point-like source. However, at this level of analysis and signal to noise, both scenarios remain plausible: a real intrinsic extension of the feature, as well as a remaining reconstructed extension in a real point source because of low signal to noise\footnote{We note that, as illustrated in Section~\ref{subsec:methods} for Scenario~A, the remaining extension of the point source after deconvolution may be smaller if the source is brighter.} 
     
-    \dvd{Table 6 of the Long paper cite Vogt et al. (2018) for the location. Can we say just a bit about how they estimated the location? Were we able to find a point source with a general purpose algorithm (\jolideconospace) that they only found when looking specifically for the point source? Our general non-parametric method reproduced their science based model?}
+    To draw stronger scientific conclusions a dedicated analysis of the region, including a simulation of the false detection ratio of point sources would be needed. We estimate the position of the feature by finding the brightest pixel in the map, obtaining $\alpha_{J2000}=01^h04^m02.75^s$ and $\delta_{J2000}=-72^d02^m00.19^s$ which is consistent with the value reported by \cite{Long2020}. It shows the reconstruction of absolute feature positions with \jolideco is consistent with past literature.
     
     \textbf{Zoom C} shows a circular filament structure of the SNR. In the counts data the structure is barely visible, while the \jolideco reconstruction shows a distinct circular structure with a locus of bright emission. This demonstrates the ability of \jolideco to reconstruct sub PSF scale structures with astrophysical relevance.
 
@@ -622,8 +631,7 @@
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/chandra-e0102-zoom-a.pdf}
             \caption{
-                The left panel shows the deconvolved flux and counts profile of the region illustrated in the right panel. The associated $3\sigma$ error band is shown transparent in the background. Both profiles are normalized such that they integrate to unity and are aligned such that the position of their peak coincides.
-                \dvd{I must not understand what you are doing here. Why is the \jolideco result so smooth? Isn't this based on the bootstrap? There should be MC error. Also what is the $3\sigma$ error band? The histogram of the bootstrap resampled values represents the uncertainty.}
+                The left panel shows the deconvolved flux and counts profile of the region illustrated in the right panel. The thick solid and dashed lines represent the mean of 100 bootstrapped observations. The counts profile is summed (stacked) across all observations, while the \jolideco profile is computed from a single joint reconstruction of all observations. The associated $3\sigma$ error band is shown transparent in the background, for both profiles. Both profiles are normalized such that they integrate to unity and are aligned such that the position of their peak coincides. 
             }
             \label{fig:chandra-e0102-zoom-a}
             \script{chandra-e0102-zoom-a.py}
@@ -631,7 +639,7 @@
     \end{figure*}
     
     \subsubsection{Flux Profile}
-    To quantify the improvement in angular resolution of the reconstructed image over the data we compute a flux profile on the \jolideco reconstruction of E0102. We chose a region perpendicular to the filament shown in Zoom~A of Figure~\ref{fig:example-chandra} of the size $128\times128$ pixels. We compute errors via the bootstrap, with resampled data obtained by sampling the event lists with replacement for each individual observation. For each resampled data set we run \jolideco and compute a flux profile on the reconstructed image. In total we sample 100 different realizations. Where each reconstruction runs for about 10 min. on a standard M1 CPU. In this way we obtain a distribution of profiles, which we use to compute an error band. For comparison we also compute the profiles and associated errors directly on the stacked bootstrapped counts (without processing or fitting). The result is shown in Figure~\ref{fig:chandra-e0102-zoom-a}.
+    To quantify the improvement in angular resolution of the reconstructed image over the data we compute a flux profile on the \jolideco reconstruction of E0102. We chose a region perpendicular to the filament shown in Zoom~A of Figure~\ref{fig:example-chandra} of the size $128\times128$ pixels. We compute errors via the bootstrap, with resampled data obtained by sampling the event lists with replacement for each individual observation. For each resampled data set we run \jolideco and compute a binned flux profile on the reconstructed image. In total we sample 100 different realizations, where each reconstruction runs for about 10 min. on a standard M1 CPU. In this way we obtain a set of profiles, which we use to compute the mean and error per bin of the profile. For comparison we also compute the profiles and associated errors directly on the bootstrapped counts summed across all observatoions (without processing or fitting). The result is shown in Figure~\ref{fig:chandra-e0102-zoom-a}.
 
     We compute the full-width at half-max (FWHM), $\omega$, of the profiles for each bootstrapped data set, by fitting a Gaussian shape with a linear gradient as a baseline for both the original counts and the \jolideconospace-deconvolved intensities. In both cases we compute the mean of $\omega$. We find that the deconvolved profile is significantly narrower. For the counts profile, $\omega_C=0.78 \pm 0.02$~arcsec, where the error bar is obtained by computing the standard deviations of $\omega$ over the bootstrap sample; and the deconvolved intensity profile has $\omega_J=0.58 \pm 0.02$~arcsec.
 
@@ -661,7 +669,7 @@
 
     \subsection{\fermi Event Types}
     \label{sec:fermi-lat-example}
-     As a second application example, we apply \jolideco  to data from the Fermi Large Area Telescope (LAT) \citep{Atwood2009}. The LAT is a pair conversion \gammaray telescope on board of the Fermi satellite. It operates in the energy range between \qty[mode = text]{30}{MeV} to  \qty[mode = text]{300}{GeV}. For this example we chose  a Galactic source with complex morphology: the supernova remnant Vela Junior. We use 14 years (from 2008 August 4 to 2023 August 4) of \enquote{P8R3\_SOURCE} photons with reconstructed energy in the range of \qty[mode = text]{10}{GeV} to \qty[mode = text]{2}{TeV} and applied a zenith angle cut of \ang{105}. This is consistent with the data selection range in \cite{Ackermann2017}. To preserve as much information as possible on the angular resolution of the instrument, we split the data into the four event types \enquote{PSF0}, \enquote{PSF1}, \enquote{PSF2} and \enquote{PSF3}, as defined by the \fermi \enquote{Pass8} data release\footnote{\url{https://fermi.gsfc.nasa.gov/ssc/data/analysis/documentation/Pass8_usage.html}}. Where PSF0 represents the subset of data with the worst and PSF3 the best angular resolution. Instead of different observations, the joint likelihood is computed accross those different event types.
+     As a second application example, we apply \jolideco  to data from the Fermi Large Area Telescope (LAT) \citep{Atwood2009}. The LAT is a pair conversion \gammaray telescope on board of the Fermi satellite. It operates in the energy range between \qty[mode = text]{30}{MeV} to  \qty[mode = text]{300}{GeV}. For this example we chose  a Galactic source with complex morphology: the supernova remnant Vela Junior. We use 14 years (from 2008 August 4 to 2023 August 4) of \enquote{P8R3\_SOURCE} photons with reconstructed energy in the range of \qty[mode = text]{10}{GeV} to \qty[mode = text]{2}{TeV} and applied a zenith angle cut of \ang{105}. This is consistent with the data selection range in \cite{Ackermann2017}. To preserve as much information as possible on the angular resolution of the instrument, we split the data into the four event types \enquote{PSF0}, \enquote{PSF1}, \enquote{PSF2} and \enquote{PSF3}, as defined by the \fermi \enquote{Pass8} data release\footnote{\url{https://fermi.gsfc.nasa.gov/ssc/data/analysis/documentation/Pass8_usage.html}}. Where PSF0 represents the subset of data with the worst and PSF3 the best angular resolution. Instead of different observations, the joint likelihood is computed across those different event types.
      
      We chose a pixel size of \qty[mode = text]{0.02}{$\deg$}, which corresponds to approximately 1/5 of the size of the PSF in the best event class. For the first part of the data reduction we use the standard \enquote{Fermitools} v2.2.0 \citep{Fermitools2019}.
     
@@ -673,9 +681,10 @@
 
     \begin{equation}
         \label{eq:approx-sigma}
-        \rho(N_{\mathrm{Data}}, N_{\mathrm{Pred}}) \approx \frac{\hat{N}_{\mathrm{Data}} - \hat{N}_{\mathrm{Pred}}} {\sqrt{\hat{N}_{\mathrm{Pred}}}}.
+        \rho(N_{\mathrm{Data}}, N_{\mathrm{Pred}}) \approx \frac{1}{\sqrt{\pi \sigma^2}}\frac{(N_{\mathrm{Data}} - N_{\mathrm{Pred}}) \circledast g_{\sigma}} {\sqrt{N_{\mathrm{Pred}}\circledast g_{\sigma}}}.
     \end{equation}
-where $\hat{N}$ is the weighted sum of counts from a Gaussian smoothing kernel with $\sigma_{\mathrm{smooth}}=5$ pixels. \dvd{I don't understand this notation. Do you mean that you apply kernal density estimation to the data and their predicted values under the model, using a Gaussian kernel with $\sigma=5$?}  The result is shown in the right panel of Figure~\ref{fig:example-fermi-lat}. The image shows no systematic effects and a spatially homogeneous distribution of the residual noise. The resulting distribution of residual significances per pixel is centered at $\mu=-0.001$ with a width of $\sigma=0.991$, indicating a close agreement with a standard normal distribution, as expected for a good model of the emission. In Figure~\ref{fig:example-fermi-lat-non-calibrated} we also show the residuals per PSF class with and without the correction defined by Equation~\ref{eq:model-npred-calibration}. More details of the \fermi analysis are available at \url{https://github.com/jolideco/jolideco-fermi-examples}
+    
+    where $g_{\sigma}$ is a Gaussian smoothing kernel of width $\sigma=5$ pixels. The result is shown in the right panel of Figure~\ref{fig:example-fermi-lat}. The image shows no systematic effects and a spatially homogeneous distribution of the residual noise. The resulting distribution of residual significances per pixel is centered at $\mu=-0.001$ with a width of $\sigma=0.991$, indicating a close agreement with a standard normal distribution, as expected for a good model of the emission. In Figure~\ref{fig:example-fermi-lat-non-calibrated} we also show the residuals per PSF class with and without the correction defined by Equation~\ref{eq:model-npred-calibration}. More details of the \fermi analysis are available at \url{https://github.com/jolideco/jolideco-fermi-examples}
     
       \begin{figure*}
         \begin{centering}
@@ -791,7 +800,9 @@ where $\hat{N}$ is the weighted sum of counts from a Gaussian smoothing kernel w
     matching those of the nearest point sources.  This pattern simultaneously tests the ability of deconvolution algorithms to distinguish the disk from the background, and the embedded point sources from the disk.  The linear radiating sources present a different challenge to algorithms which use symmetrical kernels, which usually break such features (often seen in real astronomical images as jets or detector features like streaks or bad CCD columns) into a string of point-like sources.
 
     \paragraph{Spiral} This has 4 major components: First, a double spiral structure, centered at $(-10, 0)$~pix, covering 500$^o$~deg with a maximum radial extent of 24~pixels and a width of 3~pixels; second, a disk of radius 4, also centered at $(-10, 0)$~pix; third, two vertical rows of point sources located at x-axis positions of 40~pixels and 88~pix, and y-axis locations of $\{\pm7,\pm21\}$~pix; and fourth, an annulus that encloses all these elements, also centered at $(-10, 0)$~pix, and with inner radius 52~pix and outer radius 54~pix.  
-    The point sources have intensities of $\{25, 50, 100, 200\}$~counts increasing with vertical height, and the spiral, disk, and annulus have surface brightnesses of $$\{0.5, 1, 2, 10, 1000\} \cdot \tau ~\textrm{counts}$$.  This configuration tests the recovery of closely located diffuse structures (close spiral arms), field-of-view edge effects (annulus that approaches close to the left edge of the image), and the visibility of point sources close to diffuse structures.  The case with the surface brightness of 1000~counts~pix$^{-1}$ tests the asymptotic limit of the high counts case. \vlk{ALSO MAKE A NOTE OF POINT SOURCE INTENSITY CONTRAST CF. SHARP PSFs}
+    The point sources have intensities of $\{25, 50, 100, 200\}$~counts increasing with vertical height, and the spiral, disk, and annulus have surface brightnesses of $$\{0.5, 1, 2, 10, 1000\} \cdot \tau ~\textrm{counts}$$.  This configuration tests the recovery of closely located diffuse structures (close spiral arms), field-of-view edge effects (annulus that approaches close to the left edge of the image), and the visibility of point sources close to diffuse structures.  The case with the surface brightness of 1000~counts~pix$^{-1}$ tests the asymptotic limit of the high counts case.
+    
+    \vlk{ALSO MAKE A NOTE OF POINT SOURCE INTENSITY CONTRAST CF. SHARP PSFs}
 
     % \subsection{Computational Performance}
     % We conduct as series of performance benchmarks (see Appendix?) to asses the scalability of the method to a large number of observations as well as large images. 
