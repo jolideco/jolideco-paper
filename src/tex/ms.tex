@@ -57,12 +57,7 @@
     \begin{abstract}
     
         We present a new method for joint likelihood deconvolution (\jolideconospace) of a set of astronomical observations of the same sky region in the presence of Poisson noise. 
-        The observations may be obtained from different instruments
-         with  different resolution, and different point spread functions. 
-        \jolideco reconstructs a single flux image 
-        %from the set of observations 
-        %and given models for the point spread function (PSF) per observation, 
-        by optimizing the posterior distribution based on the joint Poisson likelihood of all observations under a patch-based image prior. The patch prior is parameterised via a Gaussian Mixture model which we train on high-signal-to-noise astronomical images, including data from the  James Webb Telescope and the GLEAM radio survey. This prior favors correlation structures among the reconstructed pixel intensities that are characteristic of those observed in the %astronomical 
+        The observations may be obtained from different instruments with  different resolution, and different point spread functions. \jolideco reconstructs a single flux image by optimizing the posterior distribution based on the joint Poisson likelihood of all observations under a patch-based image prior. The patch prior is parameterised via a Gaussian Mixture model which we train on high-signal-to-noise astronomical images, including data from the  James Webb Telescope and the GLEAM radio survey. This prior favors correlation structures among the reconstructed pixel intensities that are characteristic of those observed in the %astronomical 
         training images. 
         % used to train the prior. 
         It is, however, not informative for the mean or scale of the reconstruction. By applying the method to simulated data we show that the combination of multiple observations and the patch-based prior leads to much improved reconstruction quality in many different source scenarios and signal to noise regimes. We demonstrate that \jolideco yields superior reconstruction quality relative to alternative standard methods such as the Richardson-Lucy method. We illustrate the results of \jolideco\ applied to example data from the \chandra observatory and the \ferminospace. By comparing the measured width of a counts based and the corresponding \jolideco flux profile we find the deconvolved width to be consistent with the theoretical expectation derived from the known width of the PSF.
@@ -261,7 +256,7 @@
     %
     where $\mathbf{P}_n$ is again the matrix that extracts the $n$-th patch from the image $\mathbf{x}$ to be reconstructed.
     
-    The bottom row of Figure~\ref{fig:patches} shows an example of a patch along with its representation in the \enquote{Eigenbasis} of the covariance matrices of its three most likely GMM components. Visually, the representation of the patch in the Eigenbasis of the covariance results in a denoised version of the patch. \dvd{Can we discuss this briefly?}
+    The bottom row of Figure~\ref{fig:patches} shows an example of a patch along with its representation in the \enquote{Eigenbasis} of the covariance matrices of its three most likely GMM components. Visually, the representation of the patch in the Eigenbasis of the covariance results in a denoised version of the patch.
     
  \begin{figure}
         \begin{centering}
