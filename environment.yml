@@ -17,5 +17,6 @@ dependencies:
     - gammapy
     -  pip:
         - showyourwork==0.4.2
+        - pulp < 2.8
         - matplotlib
         - git+https://adonath:${JOLIDECO_ACCESS_TOKEN}@github.com/adonath/jolideco.git
