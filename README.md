@@ -15,4 +15,11 @@
 </a>
 </p>
 
-An open source scientific article created using the [showyourwork](https://github.com/showyourwork/showyourwork) workflow.
+This repo requires the following other repositories to create the data and results for the tables and figures:
+
+- https://github.com/jolideco/jolideco-fermi-examples
+- https://github.com/jolideco/jolideco-comparison
+- https://github.com/jolideco/jolideco-chandra-e0102-zoom-a
+- https://github.com/jolideco/jolideco-chandra-examples
+
+All worklfows should be cloned to the same folder and be run one by one. Especially the "Jolideco Comparison" will require and / or mutiple GPUs. In case of question please contact the author. 
