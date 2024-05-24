@@ -33,11 +33,11 @@ instrument = "chandra"
 method_titles = {
     "data": "Data",
     "gt": "Ground Truth",
-    "jolideco-uniform-prior=n=10": "Jolideco\n(Uni, n=10)",
-    "jolideco-uniform-prior=n=1000": "Jolideco\n(Uni., n=1000)",
-    "pylira": "Pylira",
-    "jolideco-patch-prior-zoran-weiss": "Jolideco\n(Zoran-Weiss)",
-    "jolideco-patch-prior-gleam-v0.1": "Jolideco\n(GLEAM v0.1)",
+    "jolideco-uniform-prior=n=10": "M1: Jolideco\n(Uni, n=10)",
+    "jolideco-uniform-prior=n=1000": "M2: Jolideco\n(Uni., n=1000)",
+    "pylira": "M3: Pylira",
+    "jolideco-patch-prior-zoran-weiss": "M4: Jolideco\n(Zoran-Weiss)",
+    "jolideco-patch-prior-gleam-v0.1": "M5: Jolideco\n(GLEAM v0.1)",
 }
 
 figsize = config.FigureSizeAA(aspect_ratio=1.618, width_aa="two-column")
