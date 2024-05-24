@@ -432,6 +432,17 @@
         \end{centering}
     \end{figure*}
     %
+
+    \begin{table*}
+    \centering
+        \begin{tabular}{ c|c|c|c|c|c } 
+            \input{output/metrics-table-bkg.tex}
+        \end{tabular}
+        \label{tab:metrics}
+        \script{metrics-table-bkg.py}
+        \caption{Image metrics for the different signal to noise ratios shown in Figure~\ref{fig:comparison-signal-noise}. The first number in a cell shows the structural similarity index (SSI, the closer to unity, the better) and the second number shows the normalized root mean square (NRMSE, the lower the better).}
+    \end{table*}
+    
     As a second experiment we explore the dependency of the results on the background level and signal strength. Figure~\ref{fig:comparison-signal-noise} shows the results for the \jolideco method with the GLEAM prior in Scenario D1-D5. The background level varies between $\lambda_{Bkg}= 0.01, 0.1$ and \qty[mode = text]{1}{counts/pixel}. As expected, the reconstruction quality improves with higher signal strength and lower background level. Visually the method converges to the ground truth for very high signal-to-noise ratio. Indeed with very high signal strength there is no dependency of the result on the background level, particularly in Scenario~D5. On the other hand, the method struggles to reconstruct a useful signal in the case of very high background (scenarios D1-D3). 
 
 
@@ -559,7 +570,6 @@
     
     The first category of future improvements is related to the prior handling. For example, more general mixture models such as the Student-t or a generalised Gaussian mixture model can be used to model the distribution of patches. \citet{VanDenOord2014} shows that these more flexible models can account for the tails of the patch distribution and lead to improved results on natural images. We expect these improvements to transfer to astronomical images.
 
-    
     To allow the patch-based prior distribution to capture correlations at larger scales,
     \cite{Papyan2015} proposed to combine patches extracted at multiple scales of the image when training the GMM. This is a promising approach to further improve the reconstruction quality for extended sources with low signal to noise ratios.
     
@@ -571,6 +581,7 @@
 
     A last category of improvement to \jolideco is computing principled error estimates for the reconstruction. In this paper, we use bootstrap methods. Since we can compute the full posterior distribution, however, we could build an approximation to the covariance matrix of the MAP estimate, for example, by using a low-rank or sparse representation.
     Alternatively we can use MCMC to obtain a sampling from the full posterior distribution, enabling us to explore the distribution and quantify  uncertainty both in the parameters and functions of the parameters constructed to represent structures in the image. 
+    Estimating errors for the reconstruction would also include propagating systematic uncertainties on the PSF to the reconstructed image and handling a PSF that varies across the field of view, as recently proposed by \cite{Sakai2023}.    
     
     Finally we invite the community of X-ray and \gammaray astronomers to use  \jolideco to combine datasets and make new scientific discoveries, beyond what is possible with the angular resolution of existing instruments. We also welcome contributions and feedback to the public \jolideco code and validation repositories. 
 
