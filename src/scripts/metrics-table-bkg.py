@@ -9,16 +9,20 @@ log = logging.getLogger(__name__)
 
 
 METRICS = ["MSE", "NMI", "SSI", "NRMSE"]
-SCENARIOS = {"point1": "A1", "aster3": "B3", "disk3": "C3", "spiral4": "D4"}
+SCENARIOS = {
+    "spiral1": "D1",
+    "spiral2": "D2",
+    "spiral3": "D3",
+    "spiral4": "D4",
+    "spiral5": "D5",
+}
 
+METHOD = "jolideco-patch-prior-gleam-v0.1"
 
-method_titles = {
-    # "gt": "Ground Truth",
-    "jolideco-uniform-prior=n=10": r"\thead[c]{Jolideco\\(Uni, n=10)}",
-    "jolideco-uniform-prior=n=1000": r"\thead[c]{Jolideco\\(Uni., n=1000)}",
-    "pylira": r"Pylira",
-    "jolideco-patch-prior-zoran-weiss": r"\thead[c]{Jolideco\\(Zoran-Weiss)}",
-    "jolideco-patch-prior-gleam-v0.1": r"\thead[c]{Jolideco\\(GLEAM v0.1)}",
+bkg_level_titles = {
+    "bg1": "Bkg 1",
+    "bg2": "Bkg 2",
+    "bg3": "Bkg 3",
 }
 
 
@@ -60,21 +64,21 @@ for filename in filenames:
     table.add_row(data)
 
 
-selection = (table["Instrument"] == "chandra") & (table["Bkg. Level"] == "bg1")
+selection = (table["Instrument"] == "chandra") & (table["Method"] == METHOD)
 table = table[selection]
 
 
 table_metrics = Table(
-    names=["Scenario"] + list(method_titles.values()),
-    dtype=["S2"] + ["S10"] * len(method_titles),
+    names=["Scenario"] + list(bkg_level_titles.values()),
+    dtype=["S2"] + ["S10"] * len(bkg_level_titles),
 )
 
 for scenario in SCENARIOS:
     data = table[table["Scenario"] == scenario]
 
     values = {}
-    for method, title in method_titles.items():
-        selection = data["Method"] == method
+    for bkg_level, title in bkg_level_titles.items():
+        selection = data["Bkg. Level"] == bkg_level
         v = [float(data[selection][name]) for name in ["SSI", "NRMSE"]]
         values[title] = f"{v[0]:.2f} / {v[1]:.2f}"
 
