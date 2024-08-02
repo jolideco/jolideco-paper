@@ -53,8 +53,8 @@
 
     \begin{abstract}
     
-        We present a new method for joint likelihood deconvolution (\jolideconospace) of a set of astronomical observations of the same sky region in the presence of Poisson noise. 
-        The observations may be obtained from different instruments with  different resolution, and different point spread functions. \jolideco reconstructs a single flux image by optimizing the posterior distribution based on the joint Poisson likelihood of all observations under a patch-based image prior. The patch prior is parameterised via a Gaussian Mixture model which we train on high-signal-to-noise astronomical images, including data from the  James Webb Telescope and the GLEAM radio survey. This prior favors correlation structures among the reconstructed pixel intensities that are characteristic of those observed in the training images. It is, however, not informative for the mean or scale of the reconstruction. By applying the method to simulated data we show that the combination of multiple observations and the patch-based prior leads to much improved reconstruction quality in many different source scenarios and signal to noise regimes. We demonstrate that with the patch prior \jolideco yields superior reconstruction quality relative to alternative standard methods such as the Richardson-Lucy method. We illustrate the results of \jolideco\ applied to example data from the \chandra X-ray Observatory and the \ferminospace\ Gamma-ray Space Telescope. By comparing the measured width of a counts based and the corresponding \jolideco flux profile of an X-ray filament in SNR {\it 1E 0102.2-7219} we find the deconvolved width of $0.58\pm 0.02$ arcsec to be consistent with the theoretical expectation derived from the known width of the PSF.
+        We present a new framework for joint likelihood deconvolution (\jolideconospace) of a set of astronomical observations of the same sky region in the presence of Poisson noise. 
+        The observations may be obtained from different instruments with  different resolution, and different point spread functions. \jolideco reconstructs a single flux image by optimizing the posterior distribution based on the joint Poisson likelihood of all observations under one of several prior distributions. Most notably we employ a patch-based image prior, that is parameterised via a Gaussian Mixture model which we train on high-signal-to-noise astronomical images, including data from the James Webb Telescope and the GLEAM radio survey. This prior favors correlation structures among the reconstructed pixel intensities that are characteristic of those observed in the training images. It is, however, not informative for the mean or scale of the reconstruction. By applying the method to simulated data we show that the combination of multiple observations and the patch-based prior leads to much improved reconstruction quality in many different source scenarios and signal to noise regimes. We demonstrate that with the patch prior \jolideco yields superior reconstruction quality relative to alternative standard methods such as the Richardson-Lucy method. We illustrate the results of \jolideco\ applied to example data from the \chandra X-ray Observatory and the \ferminospace\ Gamma-ray Space Telescope. By comparing the measured width of a counts based and the corresponding \jolideco flux profile of an X-ray filament in SNR {\it 1E 0102.2-7219} we find the deconvolved width of $0.58\pm 0.02$ arcsec to be consistent with the theoretical expectation derived from the known width of the PSF.
     \end{abstract}
 
 
@@ -83,14 +83,15 @@
     However, in practice the RL method has multiple, partly related limitations: first, when the number of iterations is too high, the method shows a tendency to decompose regions of constant brightness into a set of bright emission peaks (\enquote{speckles}). This problem was described and studied, for example,  by \cite{Reeves1995} and \cite{Fish1995}. This means that in practice the RL method is not iterated until it converges, leading to the second limitation: there is no objective criterion for stopping the optimization process. Usually the iteration is stopped when the reconstructed image seems plausible to the eye. 
     Lastly, the RL method only provided a \enquote{point estimate} and no associated estimate of the uncertainties of the reconstruction. Uncertainties are desirable especially in the Poisson domain, for example, to measure the significance of specific features found in the reconstructed image.
     
-    To address the issue with RL decomposing extended emission structures into groups of point sources, multiple additions to the RL method  have been proposed. Most importantly this lead to the introduction of regularised RL methods, such as use of total variation \citep{Dey2006} or sparse representations based on \enquote{wavelets} or \enquote{curvelets} \citep{Starck2003}. The challenge is rooted in two fundamentally contradicting goals: a deconvolution process that favors point sources will decompose extend structures present in the image, while introducing local correlations between neighbouring pixels will lead to less sharp reconstruction of point sources.
+    To address the issue with RL decomposing extended emission structures into groups of point sources, multiple additions to the RL method  have been proposed. Most importantly this lead to the introduction of regularised RL methods, such as use of total variation \citep{Dey2006} or sparse representations based on \enquote{wavelets} or \enquote{curvelets} \citep{Starck2003}. The challenge is rooted in two fundamentally contradicting goals: a deconvolution process that favors point sources will decompose extend structures present in the image, while introducing local correlations between neighboring pixels will lead to less sharp reconstruction of point sources.
 
     One possible approach to overcome this challenge is proposed by \cite{Esch2004} and \cite{Connors2011} with the EMC2 and LIRA methods. Their key idea is to introduce a prior assumption that favors smoothness on multiple spatial scales of the image. Instead of a trying to find a single point estimate for the reconstructed image they also sampled from the posterior distribution, which allowed them to quantify the associated uncertainties. However, the prior distribution is based on the generic assumption of smoothness and does not encode any \enquote{real world} or physical information on the structures present in the image.
 
     An interesting modification of the standard RL method is proposed by \cite{Ingaramo2014}. They show that RL could be effective in creating a merged image from multiple observations. They also observed that RL would take the best visual properties out of each image and merged them to result in a reconstruction closer to the \enquote{ground truth}.
     
-    \cite{Selig2015A} and \cite{Pumpe2018} approach the problem of deconvolution of Poisson noise data implicitly using the framework of information field theory. Based on physical prior assumptions on the spatial distribution of point sources and local correlation structures of diffuse emission, they are able to deconvolve \fermi observations
-    into a mixture of point-like and diffuse emission components. While their method works well for large-scale diffuse emission, such as the Galactic diffuse gamma-ray emission, it showed artifacts around the Galactic Plane, when applied to gamma-ray data from the Fermi-LAT \cite{Selig2015B}.
+    \cite{Selig2015A} and \cite{Pumpe2018} approach the problem of deconvolution of Poisson noise data implicitly using the framework of information field theory (IFT). Based on physical prior assumptions on the spatial distribution of point sources and local correlation structures of diffuse emission, they are able to deconvolve \fermi observations into a mixture of point-like and diffuse emission components. While their method works well for large-scale diffuse emission, such as the Galactic diffuse gamma-ray emission, it shows artifacts around the Galactic Plane, when applied to gamma-ray data from the Fermi-LAT \citep{Selig2015B}. 
+
+    \cite{Westerkamp2024} applied the same IFT framework to a Chandra x-ray observation of the supernova remnant (SNR) SN1006. The authors demonstrated that it is possible to separate the point like emission of the extra-galactic background sources from the diffuse foreground emission of the SNR. The method delivered good reconstruction quality on synthetic data. When applied to observational data the authors found plausible reconstructions that include small artifacts, which they attributed to a mismatch between the modelled and actual PSF.
     
     Other interesting approaches to the problem of deconvolution can of course be found in the field of computer vision. For example \cite{Zoran2011} build on very similar assumption of local correlation for natural images. However, instead of assuming a fixed local correlation structure, such as smoothness defined by a Gaussian kernel with a given bandwidth determining the correlation scale, they proposed to learn the local correlation structure on millions of patches extracted from a set of reference images. For this they propose to split training images from representative datasets into small patches and learn a  Gaussian Mixture Model (GMM) for the distribution of extracted patches. To use the GMM in reconstruction they introduce the concept of expected patch likelihood (EPLL). They show that the patch-based GMM prior leads to much improved image reconstructions for multiple inverse problems such as denoising, deblurring and inpainting. \cite{Bouman2016} later adapted the patch prior successfully for the reconstruction of sub-millimeter radio data from the Event Horizon Telescope (EHT).
     
@@ -142,21 +143,23 @@
     %
     \begin{equation}
         \label{eq:cash}
-        \mathcal{C}\left( \mathbf{D}_j | \boldsymbol{\lambda}_j \right) = \sum_{i=1}^{N_j} \left(\lambda_{j,i} - D_{j, i} \log{\lambda_{j,i}}\right),
+        \mathcal{C}\left( \mathbf{D}_j | \boldsymbol{\lambda}_j(\mathbf{x}) \right) = \sum_{i=1}^{N_j} \left(\lambda_{j,i} - D_{j, i} \log{\lambda_{j,i}}\right),
     \end{equation}
     %  
-    By summing over all observations we obtain the joint log-likelihood of measuring a set of counts images $\mathbf{D}$ given an unknown flux image $\mathbf{x}$:
+    By summing over all observations we obtain the (negative) joint log-likelihood of measuring a set of counts images $\mathbf{D}$ given an unknown flux image $\mathbf{x}$:
     %
     \begin{equation}
         \label{eq:joint}
-        \mathcal{L}\left( \mathbf{D} | \mathbf{x} \right) = \sum_{j=1}^J \mathcal{C}\left( \mathbf{D}_j | \mathbf{x} \right)
+        \mathcal{L}\left( \mathbf{D} | \mathbf{x} \right) = \sum_{j=1}^J \mathcal{C}\left( \mathbf{D}_j | \boldsymbol{\lambda}_j(\mathbf{x}) \right)
     \end{equation}
     %
     In principle, we could obtain the Maximum Likelihood Estimate (MLE), $\hat{\mathbf{x}}$ of ${\mathbf{x}}$, by directly optimizing Equation~\ref{eq:joint}. Indeed, this is the objective of the RL algorithm.  However, in general this represents an \enquote{ill posed} inverse problem. Estimates for $\mathbf{x}$ which have similar likelihood values $\mathcal{L}(\hat{\mathbf{x}}_1)$ may look very different from each other and might also look different compared to a given ground truth, if available. Both the convolution operation
     and the noise lead to a loss of information in the data which cannot easily be recovered. The likelihood surface shows many local, close-by maxima. Depending on the starting value used for $\mathbf{x}$ and the optimization algorithm the computed MLE is likely to be a local maxima. This is fundamentally the reason for RL decomposing estimates into point sources, described in Section~\ref{sec:related}.
     
     \subsection{A Posteriori Distribution}
-    When reconstructing images in the context of inverse problems we are operating in a high dimensional parameter space, because each pixel in the image represents a parameter in the optimization process. By using prior information we can introduce correlations among the parameters, to reduce the \enquote{effective dimensionality} of the problem and guide the optimization process toward unique and more stable solutions.
+    When reconstructing images in the context of inverse problems we are operating in a high dimensional parameter space, because each pixel in the image represents a parameter in the optimization process. High resolution \xray-images are typically composed of  
+    %one can expect 
+    up to $\mathcal{O}(10^6)$ pixels. By using prior information we can introduce correlations among the parameters, to reduce the \enquote{effective dimensionality} of the problem and guide the optimization process toward unique and more stable solutions.
     
     Using Bayes' rule we can express the \aposteriori likelihood under a given prior distribution, $P(\mathbf{x} )$:
     %
@@ -166,28 +169,28 @@
     \end{equation}
     %
     The Maximum A Posteriori (MAP) estimate of $\mathbf{x}$ is the value that maximizes Equation~\ref{eq:bayes}.
-    Taking the logarithm of Equation~\ref{eq:bayes}, replacing the definition of the likelihood $P(\mathbf{D}|\mathbf{x})$ with Equation~\ref{eq:joint} and dropping the normalization term $P(\mathbf{D})$ which is independent of $\mathbf{x}$, we obtain the following expression for the log-posterior distribution
+    Taking the logarithm of Equation~\ref{eq:bayes}, replacing the definition of the likelihood $P(\mathbf{D}|\mathbf{x})$ with Equation~\ref{eq:joint} and dropping the normalization term $P(\mathbf{D})$ which is independent of $\mathbf{x}$, we obtain the following expression for the (negative) log-posterior distribution
     $\mathcal{L}$:
     %
     \begin{equation}
         \label{eq:total}
-        \mathcal{L}\left(\mathbf{x} | \mathbf{D} \right) = \sum_{j=1}^J \mathcal{C}\left( \mathbf{D}_j | \mathbf{x} \right) - \beta \cdot \mathcal{P}(\mathbf{x}),
+        \mathcal{L}\left(\mathbf{x} | \mathbf{D} \right) = \sum_{j=1}^J \mathcal{C}\left( \mathbf{D}_j | \boldsymbol{\lambda}_j(\mathbf{x}) \right) - \beta \cdot \mathcal{P}(\mathbf{x}),
     \end{equation}
     %
-    where $\mathcal{C}\left( \mathbf{D}_j | \mathbf{x} \right)$ represents the summed log-likelihood for an individual observation $j$ and $\mathcal{P}(\mathbf{x})$ represents the log of the prior distribution with the factor $\beta$ adjusting the weight of the prior relative to the joint log likelihood term. The parameter $\beta$ can be viewed as a hyper-parameter, chosen by the user to adjust the strength of the prior distribution relative to the likelihood. The choice of $\beta$ is optional and for all experiments presented in this paper we set $\beta=1$. 
+    where $\mathcal{C}\left( \mathbf{D}_j | \boldsymbol{\lambda}_j(\mathbf{x}) \right)$ represents the summed log-likelihood for an individual observation $j$ and $\mathcal{P}(\mathbf{x})$ represents the log of the prior distribution with the factor $\beta$ adjusting the weight of the prior relative to the joint log likelihood term. The parameter $\beta$ can be viewed as a hyper-parameter, chosen by the user to adjust the strength of the prior distribution relative to the likelihood. The choice of $\beta$ is optional and for all experiments presented in this paper we set $\beta=1$. 
 
     %\newpage
     \subsection{Patch-based Image Prior}
     \label{sec:patch-prior}
     In general it is difficult to capture global image characteristics in a prior distribution taking into account all pixel to pixel correlations. The size of the corresponding correlation matrix would grow with the squre of the number of pixels  and thus quickly become computationally untraceable. However, astronomical images typically only exhibit local correlations among the pixels. This is because the spatial scale of astrophysical processes in an image is always limited by the finite interaction time and the fact that the interaction cannot propagate faster than the speed of light. This means on smaller scales astronomical images often contain basic structures such as edges, corners, filaments or periodic patterns formed by local astrophysical processes. For this reason we adopt the patch-based image prior distribution introduced by \cite{Zoran2011}. 
 
-    A patch is defined as a small, typically square, region of size $N_p \times N_p$ pixels, representing a local neighbourhood in a given image. Mathematically we can formulate the extraction of such patches as:
+    A patch is defined as a small, typically square, region of size $N_p \times N_p$ pixels, representing a local neighborhood in a given image. Mathematically we can formulate the extraction of such patches as:
     %
     \begin{equation}
         \mathbf{x}_n = \mathbf{P}_n \mathbf{x},
     \end{equation}
     %
-    where $\mathbf{P}_n$ represents a neighbourhood matrix to extract the $n$-th patch from the image $\mathbf{x}$ and where $\mathbf{x}_n$ is the vector of length $N_p^2$ representing the \enquote{flattened} image patch. By obtaining a large number of patches we can model the distribution of pixel intensities within the patches using a Gaussian Mixture Model (GMM) \citep{McLachlan2004}. The GMM is a universal function approximator and thus can model arbitrary distributions. For now we assume that we have a pre-trained GMM which encodes the patch distribution of some reference image we have chosen. During the actual image reconstruction we aim to identify the most likely GMM component per patch, treating this as a discrete nuisance-parameter that is optimized along with the image $\mathbf{x}$. 
+    where $\mathbf{P}_n$ represents a neighborhood matrix to extract the $n$-th patch from the image $\mathbf{x}$ and where $\mathbf{x}_n$ is the vector of length $N_p^2$ representing the \enquote{flattened} image patch. By obtaining a large number of patches we can model the distribution of pixel intensities within the patches using a Gaussian Mixture Model (GMM) \citep{McLachlan2004}. The GMM is a universal function approximator and thus can model arbitrary distributions. For now we assume that we have a pre-trained GMM which encodes the patch distribution of some reference image we have chosen. During the actual image reconstruction we aim to identify the most likely GMM component per patch, treating this as a discrete nuisance-parameter that is optimized along with the image $\mathbf{x}$. 
     
     A convenient property of the GMM is that its probability density can be evaluated in closed form. For a given single patch $\mathbf{x}_n$,
     %
@@ -195,9 +198,8 @@
         \label{eq:gmm}
         P_{\rm GMM}(\mathbf{x}_n) = \sum_{k=1}^K \pi_k \mathcal{N}(\mathbf{x}_n| \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k^2),
     \end{equation}
-    %
+    where $\mathcal{N}$ represents a multivariate Gaussian normal distribution, $\mathbf{\mu_k}$ is the vector of Gaussian means (with dimension equal to the number of pixels in each patch), $\mathbf{\Sigma}_k$ is the variance-covariance matrix of the Gaussian distribution (which tabulates the variances and pairwise covariances of the patch pixels), and  $\pi_k$ is the weight of component $k$ of the GMM.
 
-    Where $\mathcal{N}$ is a multivariate Gaussian normal distribution. The distribution is parameterized by the vector $\mathbf{\mu_k}$, which a dimension equivalent to the number of pixels in a patch and represents the mean of each Gaussian component. The pairwise correlation between pixels is represented by the corresponding covariance matrix $\mathbf{\Sigma}_k$, while the weight of each component is given by $\pi_k$.
     
     If we knew the relevant component, $k_n$, for patch $\mathbf{x}_n$ we could derive the conditional log-prior distribution directly from Equation~\ref{eq:gmm}:
     %
@@ -223,12 +225,11 @@
     \begin{equation}
     \label{eq:prior-total}
         \mathcal{P}(\mathbf{x}, \hat{\mathbf{k}}) = 
-        %\mathcal{P}(\mathbf{x} | \hat{\mathbf{k}})  + \mathcal{P}(\hat{\mathbf{k}}) =
         \sum_{n = 1}^N \mathcal{P}_{\rm GMM}(\mathbf{P}_n \mathbf{x} | \hat{k}_n) +
         \sum_{n = 1}^N \log \pi_{\hat{k}_n},
     \end{equation}   
     %
-    where $\mathbf{P}_n$ is again the matrix that extracts the $n$-th patch from the image $\mathbf{x}$ to be reconstructed and $\pi_{\hat{k}_n}$ the weight of the component $\hat{k}_n$, which maximizes the log-likelihood for the n-th patch.
+    where $\mathbf{P}_n$ is again the matrix that extracts the $n$-th patch from the image $\mathbf{x}$ and $\pi_{\hat{k}_n}$ is the weight of GMM component $\hat{k}_n$, with $\hat{k}_n$ being the index of the GMM component that maximizes the log-prior distribution for patch $n$.
     
     The bottom row of Figure~\ref{fig:patches} shows an example of a patch along with its representation in the \enquote{Eigenbasis} of the covariance matrices of its three most likely GMM components. Visually, the representation of the patch in the Eigenbasis of the covariance results in a denoised version of the patch.
     
@@ -236,7 +237,7 @@
         \begin{centering}
             \includegraphics[width=\linewidth]{figures/patches.pdf}
             \caption{
-                Grid of overlapping quadratic patches of size $8\times8$~pixels on top of an example image of the size $128 \times 68$~pixels. The overlap size was chosen to be $2$ pixels, which results in 50 patches in total. The patches are shown translucent, such that the horizontal and vertical \enquote{stripes} result from two neighboring overlapping patches, while the small, even lighter squares result from four patches overlapping at the their corners. The bottom row shows the red example patch $\mathbf{x}_n$ on the left. The three other patches show the example patch represented by a linear combination of the six largest Eigenvectors of the covariance matrices of the 3 most likely GMM components $k = 105, 77, 17$. This example uses the GMM learned from the JWST Cas A image.
+                Grid of overlapping quadratic patches of size $8\times8$~pixels on top of an example image of the size $128 \times 68$~pixels. The overlap size was chosen to be $2$ pixels, which results in 50 patches in total. The patches are shown translucent, such that the horizontal and vertical \enquote{stripes} result from two neighboring overlapping patches, while the small, even lighter squares result from four patches overlapping at the their corners. The bottom row shows the red example patch $\mathbf{x}_n$ on the left. The three other patches show this example patch represented by a linear combination of the six largest Eigenvectors of the covariance matrices of the 3 most likely GMM components $k = 105, 77, 17$. This example uses the GMM learned from the JWST Cas A image.
             }
             \label{fig:patches}
             \script{patches.py}
@@ -246,7 +247,7 @@
 
     \cite{Zoran2011} found that the reconstruction quality can be improved by working with a grid of overlapping patches. This is illustrated in Figure~\ref{fig:patches}. However, using a grid of overlapping patches makes the interpretation of the prior distribution more difficult, because pixels at the corners and edges of patches are counted multiple times. For this reason we introduce a weighting mask when evaluating the GMM prior distribution. This mask weighs the pixels of each patch by their overlap with neighboring patches. Overlapping edges are assigned a weight of 1/2, while overlapping corners are assigned a weight of 1/4, when computing the log prior distribution for a patch as given by Equation~\ref{eq:cond.log.prior}.
     
-    Apart from this, the process for choosing the most likely GMM prior component remains unmodified. However, we note that we neglected the prior dependence between neighbouring patches\footnote{That is, we continue to evaluate the log-prior distribution of the full image by summing over the overlapping patches as in Equation~\ref{eq:prior-total}, even though overlapping patches include common pixels and are thus clearly not \aprioir independent.}. As the choice of the GMM component per patch is discrete, a simultaneous gradient based optimization of all patches is not easily possible, because we cannot compute gradients across GMM components. This would require a continuous representation or interpolation between GMM components.
+    Apart from this, the process for choosing the most likely GMM prior component remains unmodified. However, we note that we neglected the prior dependence between neighboring patches\footnote{That is, we continue to evaluate the log-prior distribution of the full image by summing over the overlapping patches as in Equation~\ref{eq:prior-total}, even though overlapping patches include common pixels and are thus clearly not \aprioir independent.}. As the choice of the GMM component per patch is discrete, a simultaneous gradient based optimization of all patches is not easily possible, because we cannot compute gradients across GMM components. This would require a continuous representation or interpolation between GMM components.
    
     \subsubsection{Image Dynamic Range and Patch Normalization}
     \label{ssec:patch-norm}
@@ -254,16 +255,17 @@
     %
     \begin{equation}
         \label{eq:patch-norm}
-        \tilde{\mathbf{x}}_n = \frac{\mathbf{x}_n - \Bar{\mathbf{x}}_n}{\Bar{\mathbf{x}}_n}
+        \widetilde{\mathbf{P}_n\mathbf{x}}
+        = \frac{\mathbf{x}_n - \Bar{\mathbf{x}}_n}{\Bar{\mathbf{x}}_n}.
     \end{equation}
     %
-    By dividing by the mean of the patch, $\Bar{\mathbf{x}}_n$, the structure in the patch becomes independent of the total brightness the patch contains. This results in patches being grouped only by their pixel to pixel contrast and not by their overall brightness. This corresponds to the assumption that the structure in the patch is \aprioir independent of the total flux contained in the patch, which we consider a valid assumption for astronomical images. This also generalizes to the prior distribution of the whole image described by Equation~\ref{eq:prior-total}. The value of the prior distribution is independent of the total flux of the image. The prior distribution simply regularizes the structure in the image, while the overall intensities are typically well constrained by data as quantified by the Poisson likelihood term. Thus we simply assume a uniform prior distribution for the patch intensities. Algorithmically, we replace $\mathbf{x}_n$ with $\tilde{\mathbf{x}}_n$ when evaluating Equations~\ref{eq:gmm} and \ref{eq:khat} and transform $\mathbf{P}_n\mathbf{x}$ via Equation~\ref{eq:patch-norm} when evaluating Equation~\ref{eq:prior-total}.
+    By dividing by the mean of the patch, $\Bar{\mathbf{x}}_n$, the structure in the patch becomes independent of the total brightness the patch contains. This results in patches being grouped only by their pixel to pixel contrast and not by their overall brightness. This corresponds to the assumption that the structure in the patch is \aprioir independent of the total flux contained in the patch, which we consider a valid assumption for astronomical images. This also generalizes to the prior distribution of the whole image described by Equation~\ref{eq:prior-total}. The value of the prior distribution is independent of the total flux of the image. The prior distribution simply regularizes the structure in the image, while the overall intensities are typically well constrained by data as quantified by the Poisson likelihood term. 
 
     \subsubsection{Cycle Spinning}
     The evaluation of the patch prior divides the reconstructed image into a fixed grid of overlapping patches. To avoid artifacts in the reconstruction due to the fixed position of the grid, we use the method of \enquote{cycle spinning} \citep{Coifman1995}. Before evaluating the patch prior at each iteration of our optimizer, we shift the image $\mathbf{x}$ by a random number of pixels in both the x and y direction, where the shift is less than or equal to half the size of a patch. The same method has, for example, been used in \cite{Esch2004}.
     
-    A variation of cycle spinning specifically for the patch prior is proposed in \cite{Parameswaran2018}. Instead of a regular grid for the patches they propose to work with a randomised grid of patches, where the center of each patch is randomly shifted, while ensuring that patches overlap by at least one pixel. In doing so they find that a smaller total number of patches can be used, while retaining the same reconstruction quality. This improves the computational performance of the method. We also implemented the evaluation of the patch prior on a randomized patch grid for comparison and found similar results as \cite{Parameswaran2018}: the reconstruction was slightly faster with the same reconstruction quality. However we found (a) practical issues with reproducibility of results when using the method on a GPU and (b) a lot of code complexity to handle the edge of images correctly. Give the performance improvement was only small,
-    we decided to just stick with the much simpler regular grid and cycle spinning, described in the previous paragraph.
+    A variation of cycle spinning specifically for the patch prior is proposed in \cite{Parameswaran2018}. Instead of a regular grid for the patches they propose to work with a randomised grid of patches, where the center of each patch is randomly shifted, while ensuring that patches overlap by at least one pixel. In doing so they find that a smaller total number of patches can be used, while retaining the same reconstruction quality. This improves the computational performance of the method. We also implemented the evaluation of the patch prior on a randomized patch grid for comparison and found similar results as \cite{Parameswaran2018}: the reconstruction was slightly faster with the same reconstruction quality. We found, however,  (a) there are practical issues with reproducibility of results when using this method on a GPU and (b) the method requires significant code complexity to handle the edge of images correctly. Given that the performance improvement was small,
+    we thus decided to use the simpler regular grid and cycle spinning, as described in the previous paragraph.
 
     \subsection{Systematic Errors of Predicted Counts}
     Each observation $\mathbf{D}_j$ is subject to systematic errors. For example, the pointing accuracy of the telescope when repeatedly pointed to the same object or when using different types of telescopes for observation, the reconstructed position of an astronomical object may vary among the observations. The process of correcting for these inaccuracies is called \textit{astrometry} and is a standard procedure in for example \chandra data analysis. A second example of systematic errors is the variation of background emission between multiple observations.
@@ -272,10 +274,25 @@
     %
     \begin{equation}
         \label{eq:model-npred-calibration}
-        \boldsymbol{\lambda}_j = \mathbf{E}_j \cdot  \left(\mathrm{PSF}_j \circledast \phi_j(\mathbf{x}| \delta_{x,j}, \delta_{y,j})\right) + \alpha_j \cdot \mathbf{B}_j
+        \begin{aligned}
+        \boldsymbol{\lambda}_j(\mathbf{x}, \delta_{x,j}, \delta_{y,j}, \alpha_j) = \mathbf{E}_j \cdot  \left(\mathrm{PSF}_j \circledast \phi_j(\mathbf{x}| \delta_{x,j}, \delta_{y,j})\right) \\ + \alpha_j \cdot \mathbf{B}_j
+        \end{aligned}
     \end{equation}
     %
     In practice one observation is used as a reference and its corresponding systematic shifts in position $\delta_{x,j}, \delta_{y,j}$ are frozen during optimization. An example of the effect of the positional shift and background normalization can be seen in Figure~\ref{fig:example-fermi-lat-non-calibrated}.
+
+    Modifying the (negative) log-posterior distribution given in Equation~\ref{eq:total} for the normalization of the $\mathbf{x}_n$ in Equation~\ref{eq:patch-norm}  and the adjustment for systematic effects in Equation~\ref{eq:model-npred-calibration} yields,
+    \begin{equation}
+        \label{eq:total-final}
+        \begin{aligned}
+        \mathcal{L}\left(\mathbf{x}, \mathbf{k}, \boldsymbol{\delta}, \boldsymbol{\alpha} | \mathbf{D} \right) 
+        = \sum_{j=1}^J \mathcal{C}\left( \mathbf{D}_j | \boldsymbol{\lambda}_j(\mathbf{x}, \delta_{x,j}, \delta_{y,j},\alpha_j) \right) 
+        \\ - \beta \left\{
+         \sum_{n = 1}^N \mathcal{P}_{\rm GMM}(\widetilde{\mathbf{P}_n \mathbf{x}} | {k}_n) +
+        \sum_{n = 1}^N \log \pi_{{k}_n} \right\},
+        \end{aligned}
+    \end{equation}
+    where $\mathbf{k} = (k_1, \ldots k_N)$, $\boldsymbol{\delta} = (\delta_{x,1},\delta_{y,1},\ldots, \delta_{x,J},\delta_{y,J})$ and $\boldsymbol{\alpha} = (\alpha_1,\ldots, \alpha_J)$. For fixed $\mathbf{x}$, Equation~\ref{eq:total-final} is optimized as a function of $\mathbf{k}$ by Equation~\ref{eq:khat}, but with $\mathbf{x}_n$ replaced by $\widetilde{\mathbf{P}_n \mathbf{x}}$.  The joint prior distribution of $(\mathbf{x}, \mathbf{k}, \boldsymbol{\delta}, \boldsymbol{\alpha})$ is given by the term in Equation~\ref{eq:total-final} within curly brackets. Note that this places uniform prior distributions on $\boldsymbol{\delta}$ and $\boldsymbol{\alpha}$ and formally sets the prior on $\mathbf{P}_n\mathbf{x}$ to the GMM evaluated at  $\widetilde{\mathbf{P}_n \mathbf{x}}$. Since this does not depend on $\mathbf{\bar x}_n$, we implicitly assume a uniform prior on each $\mathbf{\bar x}_n$. In practice, we do not expect the choice of prior distribution on the scale of each patch to influence the final fit, but some users may prefer to assume a flat prior on the log of each $\mathbf{\bar x}_n$ by adding $\sum_{n=1}^N \mathbf{\bar{x}}_n$ within the curly brackets on the right-hand-side of Equation~\ref{eq:total-final}. 
 
     \subsection{Estimation of Statistical Errors}
     Estimating the global covariance matrix for estimated image is computationally infeasible, because the size of the matrix grows with the squared number of pixels. However, there are other ways to estimate the statistical uncertainties associated with the flux image. We propose two methods:
@@ -286,21 +303,22 @@
     \item \textbf{Bootstrapping Events}. If only one or a small number of observations are available we propose bootstrapping of the events used to compute the counts image(s). This corresponds to splitting a single observation into multiple observations by splitting the single exposure into multiple time intervals. This way one can apply the first proposed method.
     \end{itemize}
 
+    How well these bootstrap error estimates approximate the true posterior uncertainty and/or the frequency coverage of the derived bootstrap intervals is a topic of future study. 
     We also experimented with computing the diagonal of the Hessian of the posterior distribution evaluated at the MAP estimate. However we found this numerically challenging because of the random cycle spinning. 
 
     \section{Implementation}
     \subsection{\jolideco Framework}
-    The goal of the reconstruction process is to find the mode of the posterior distribution defined by Equation~\ref{eq:total}. Given that there is a parameter for each pixel in the image, this is a high dimensional optimization problem. Differentiable programming frameworks such as PyTorch~\citep{Pytorch2019} allow for solving high dimensional optimization problems using back-propagation. They also offer a variety of optimization methods such as stochastic gradient decent (SGD). The latter is also applicable in our case, as we work with multiple observations at the same time, where a subset of the observations represents a \enquote{mini batch} in terms of ML.
+    The goal of the reconstruction process is to find the mode of the posterior distribution defined by Equation~\ref{eq:total-final}. Given that there is a parameter for each pixel in the image, this is a high dimensional optimization problem. Differentiable programming frameworks such as PyTorch~\citep{Pytorch2019} allow for solving high dimensional optimization problems using back-propagation. They also offer a variety of optimization methods such as stochastic gradient decent (SGD). The latter is also applicable in our case, as we work with multiple observations at the same time, where a subset of the observations represents a \enquote{mini batch} in terms of ML.
 
     We implemented the \jolideco method as an independent Python package, based on PyTorch as the computational back-end.  We defined a modular, object oriented code structure, to allow parts of the algorithm to be flexible and interchangeable, such as the choice of the patch normalization, the choice of GMM, optimization methods, and serialisation formats for the reconstruction results as well as the corresponding diagnostic information, such as the trace of the posterior and prior likelihood values. This will simplify future improvement and extension of the package as well as the adoption of \jolideco by the astronomical community. The package is available on the platform GitHub\footnote{\url{https://github.com/jolideco/jolideco}}.
 
     We use Numpy~\citep{Numpy2020} for handling data arrays and Matplotlib~\citep{Hunter2007} for plotting. To learn the GMM from patches we use the standard implementation provided in the Scikit-Learn~\citep{scikit-learn} package. To handle the serialisation of images to the FITS data format and to handle world coordinate systems (WCS) we use Astropy~\citep{Astropy2018}.
 
-    \subsection{Learning GMMs}
+    \subsection{Learning the GMMs}
     \label{ssec:jolideco-gmm-library}
-    The patch-based image prior described in Section~\ref{sec:patch-prior} requires a pre-trained GMM. We train the GMM by choosing a set of reference images, splitting them into patches of size $8\times8$ pixels and learning a GMM with $K=128$ components from the whole distribution of patches. In general the strength of the GMM prior is its high \enquote{expressiveness}. This means the prior distribution contains a large variety of structural shapes and has freedom to adapt to the data in the optimization process by choosing the most likely GMM component for each patch in the image. \cite{Zoran2012} empirically found that the reconstruction quality depended on the number of components of the GMM. A higher number of components clearly lead to an improved reconstruction quality, as the GMM was more expressive. This also aligns with the intuitive argument that GMMs are universal function approximators; with a sufficient number of components they can approximate any distribution. \cite{Zoran2012} found the reconstruction quality started to saturate once the number of components was large enough. Empirically they measured a number of 32 components to be sufficient in practice for natural images. We decided to adopt a more conservative number of 128.
+    The patch-based image prior described in Section~\ref{sec:patch-prior} requires a pre-trained GMM. We train the GMM by choosing a set of reference images, splitting them into patches of size $8\times8$ pixels and learning a GMM with $K=128$ components from the whole distribution of patches. In general the strength of the GMM prior is its high \enquote{expressiveness}. This means the prior distribution contains a large variety of structural shapes and has freedom to adapt to the data in the optimization process by choosing the most likely GMM component for each patch in the image. \cite{Zoran2012} found empirically that the reconstruction quality depends on the number of GMM components. A higher number of components clearly leads to improved reconstruction quality, as the GMM was more expressive. This also aligns with the intuitive argument that GMMs are universal function approximators; with a sufficiently large number of components they can approximate any distribution. \cite{Zoran2012} found the reconstruction quality begins to saturate with about 32 components, at least for natural images. We decided to adopt a more conservative number with 128 components.
     
-    With radio data, \cite{Bouman2016} found their results to be mostly independent of the choice of data used for learning the GMM prior. However, in the low signal-to-noise regime we typically expect a higher dependence of the results on the choice of prior, simply because the prior distribution is more influential when the data is less informative. Thus, there is the potential for the choice of GMM training data to be influential on results and the prior should be adapted to the particular analysis scenario in order to avoid bias. For this reason and for purposes of testing we learned and provide a selection of GMMs to be used with the patch prior for download in a \textit{GitHub} repository\footnote{\url{https://github.com/jolideco/jolideco-gmm-library}}. 
+    With radio data, \cite{Bouman2016} found their results to be mostly independent of the choice of data used for learning the GMM prior. In the low signal-to-noise regime, however, we typically expect a higher dependence of the results on the choice of prior, simply because the prior distribution is more influential when the data is less informative. Thus, there is the potential for the choice of GMM training data to be influential on results and the prior should be adapted to the particular analysis scenario in order to avoid bias. For this reason and for purposes of testing we learned and provide a selection of GMMs to be used with the patch prior for download in a \textit{GitHub} repository\footnote{\url{https://github.com/jolideco/jolideco-gmm-prior-library}}; illustrative examples of the training images are also provided in this repository.
     
     \subsubsection{Zoran \& Weiss}
     As a baseline reference we use the original trained GMM provided by \cite{Zoran2011}. It was trained from the Berkeley image database \citep{Martin2001} which contains natural images and images of every day scenes and objects. 
@@ -331,13 +349,13 @@
 
     \subsection{Optimization Strategy}
     \label{sec:opt-strategy}
-    Maximising the \aposteriori likelihood defined by Equation~\ref{eq:total} with respect to the model parameters $\mathbf{x}$ is a high dimensional optimization problem. We found the convergence greatly improved when the optimizer operates on $\log{\mathbf{x}}$. This is to be expected, as the brightness in pixels of astronomical can span multiple orders of magnitudes. We used the ADAM algorithm \citep{Kingma2014}, a stochastic gradient descent method, without decay and a fixed learning rate of $\mathrm{lr}=10^{-3}$. In practice we found the convergence of the method to be very stable, however we applied the following strategy to speed up the optimization process:
+    Maximising the \aposteriori likelihood defined by Equation~\ref{eq:total-final} with respect to the model parameters $\mathbf{x}$ is a high dimensional optimization problem. We found the convergence greatly improved when the optimizer operates on $\log{\mathbf{x}}$. This is to be expected, as the brightness in pixels of astronomical image can span multiple orders of magnitudes. We used the ADAM algorithm \citep{Kingma2014}, a stochastic gradient descent method, without decay and a fixed learning rate of $\mathrm{lr}=10^{-3}$. In practice we found the convergence of the method to be very stable, however we applied the following strategy to speed up the optimization process:
 
     \begin{itemize}
-        \item[1.] We start from a random image where each pixel was drawn from a normal distribution with the mean corresponding to the total mean of the flux in the image and a standard deviation of 10\% of the mean. We first estimate $\mathbf{x}$ by using a uniform prior and early stopping after 50 iterations. This corresponds approximately to a reconstruction obtained with the standard RL algorithm. As the uniform prior is much faster to evaluate ($\mathcal{O(100)}$), we quickly arrive at a much better starting estimate for the reconstructed image. 
-        \item[2.] We freeze the image parameters and optimize the parameters associated with the systematic error described in Equation~\ref{eq:model-npred-calibration}. This way we arrive at a better starting estimate for those. Again the process is fast, because the number of parameters is very small. 
-        \item[3.] Finally we simultaneously optimize
-        the image $\mathbf{x}$, the GMM component indicators for each patch, $k_n$ and the parameters associated with systematic error simultaneously until convergence. Convergence is verified visually by inspecting the time series of the log posterior distribution evaluated at the iterates or the models parameters. We adjust the number of epochs (number of passes through the whole set of observations) such that the curve had flattened out for the last few hundred iterations.
+        \item[1.] We start from a random image where each pixel was drawn from a normal distribution with the mean corresponding to the total mean of the flux in the image and a standard deviation of 10\% of the mean. We first estimate $\mathbf{x}$ using a uniform prior and early stopping after 50 iterations. This corresponds approximately to a reconstruction obtained with the standard RL algorithm. As the uniform prior is much faster to evaluate ($\mathcal{O}(100)$ times faster), this step quickly produces a much better starting value for the optimization with the patch prior described in Step~3. 
+        \item[2.] We freeze the image parameters and optimize the parameters associated with the systematic error described in Equation~\ref{eq:model-npred-calibration}. Again, this procedure quickly delivers better starting values for the optimization in Step 3. Computation is fast because the number of parameters is very small (and scales linearly with the number of datasets).
+        \item[3.] Finally we simultaneously optimize the image $\mathbf{x}$, the GMM component indicators for each patch, $k_n$ and the parameters associated with systematic error until convergence.  Algorithmically, this is accomplished by iteratively updating (a) $\mathbf{k}$ for fixed $\mathbf{x}, \boldsymbol{\alpha}$, and $\boldsymbol{\delta}$ (via Equation~\ref{eq:khat} with $\mathbf{x}_n$ replaced by $\widetilde{\mathbf{P}_n\mathbf{x}}$) and (b) $(\mathbf{x}, \boldsymbol{\alpha}, \boldsymbol{\delta})$ for fixed $\mathbf{k}$ via SGD.
+        Convergence is verified visually by inspecting the series of values of the log posterior distribution evaluated at the iterates or the models parameters. We adjust the number of epochs (number of passes through the whole set of observations) such that the curve had flattened out for the last few hundred iterations. This is also the point in the iteration, where the noise in the loss, introduced by SGD and the cycle spinning, clearly dominates any remaining decrease in the mean loss.
     \end{itemize}
     
     \section{Experiments}
@@ -364,8 +382,6 @@
 
     \begin{enumerate}
 
-
-        
         \item[\bf M1.] \textbf{\jolideco (Uniform, n=10)}: we used \jolideco with a uniform prior on $\mathbf{x}$ and ran the optimizer for 10 iterations. We consider this as a baseline method reference similar to RL. While the optimization procedure is different, we expect similar behaviour for the local correlations of pixels. This ad hoc approach of early stopping is often used in practice to regularise the RL output.
         
         \item[\bf M2.] \textbf{\jolideco (Uniform, n=1000)}:  we used \jolideco with a uniform prior on $\mathbf{x}$, but running the optimizer for 1000 iterations. This is the same as above but without early stopping. This gives rise to the issue of RL decomposing extended emission into point sources.
@@ -405,12 +421,12 @@
     %
     \begin{table*}
     \centering
-        \begin{tabular}{ c|c|c|c|c|c } 
+        \begin{tabular}{cccccc} 
             \input{output/metrics-table.tex}
         \end{tabular}
-        \label{tab:metrics}
         \script{metrics-table.py}
-        \caption{Image metrics for the different source scenarios and methods shown in Figure~\ref{fig:comparison-scenarios}. The first number in a cell shows the structural similarity index (SSI, the closer to unity, the better) and the second number shows the normalized root mean square (NRMSE, the lower the better).}
+        \caption{Image metrics for the different source scenarios and methods shown in Figure~\ref{fig:comparison-scenarios}. The first number in each cell shows the structural similarity index (SSI, the closer to unity, the better) and the second number shows the normalized root mean square (NRMSE, the lower the better).}
+        \label{tab:metrics}
     \end{table*}
     %
     The weak extended source with four embedded brighter point sources of Scenario C3 is challenging for all the methods. While the methods again reconstruct the point sources well, the visual differences are large for the weak underlying extended emission. The uniform prior with 1000 iterations decomposes the extended source into a grid of almost equidistant point sources resembling only the outer boundary of the original source. Pylira shows a similar tendency but improves the reconstruction of the extended source by leaving more emission in between the bright emission spots. The best results are achieved by the patch priors, which reconstruct a plausible extended source with approximately uniform brightness. The jet like features are decomposed into a \enquote{trail} of point sources by the uniform prior and Pylira method. The patch prior achieves a much more plausible reconstruction with almost uniform brightness for the linear structures. We also note that the patch prior does not show a preferred direction or bias in reconstruction, that could be possibly encoded in the training data.
@@ -435,12 +451,12 @@
 
     \begin{table*}
     \centering
-        \begin{tabular}{ c|c|c|c|c|c } 
+        \begin{tabular}{cc@{\hspace{2pc}}c@{\hspace{2pc}}c} 
             \input{output/metrics-table-bkg.tex}
         \end{tabular}
-        \label{tab:metrics}
         \script{metrics-table-bkg.py}
-        \caption{Image metrics for the different signal to noise ratios shown in Figure~\ref{fig:comparison-signal-noise}. The first number in a cell shows the structural similarity index (SSI, the closer to unity, the better) and the second number shows the normalized root mean square (NRMSE, the lower the better).}
+        \caption{Image metrics for the different signal to noise ratios shown in Figure~\ref{fig:comparison-signal-noise}. The first number in each cell shows the structural similarity index (SSI, the closer to unity, the better) and the second number shows the normalized root mean square (NRMSE, the lower the better).}
+        \label{tab:metrics-bkg}
     \end{table*}
     
     As a second experiment we explore the dependency of the results on the background level and signal strength. Figure~\ref{fig:comparison-signal-noise} shows the results for the \jolideco method with the GLEAM prior in Scenario D1-D5. The background level varies between $\lambda_{Bkg}= 0.01, 0.1$ and \qty[mode = text]{1}{counts/pixel}. As expected, the reconstruction quality improves with higher signal strength and lower background level. Visually the method converges to the ground truth for very high signal-to-noise ratio. Indeed with very high signal strength there is no dependency of the result on the background level, particularly in Scenario~D5. On the other hand, the method struggles to reconstruct a useful signal in the case of very high background (scenarios D1-D3). 
@@ -464,9 +480,9 @@
 
     Using the data from the \enquote{Chandra} scenario alone results in a good reconstruction in all variations of scenario D. As expected the reconstruction quality improves for higher signal to noise ratio. 
     
-    Using only the data from the \enquote{XMM} scenario results in lower quality reconstructions, due to the lower angular resolution of the data. However, we find that the spiral arm structure is reconstructed at all levels of signal strength, even when barely visible by eye. The ring structure is sharpened considerably in all cases as well. The near-by point sources on the left and right of the spiral arm structure cannot be separated into individual point sources, but remain blurred along the direction of their neighbours. Thids a similar situation as in the lower left of the image in the A1 point source scenario, when sources are to close by.
+    Using only the data from the \enquote{XMM} scenario results in lower quality reconstructions, due to the lower angular resolution of the data. However, we find that the spiral arm structure is reconstructed at all levels of signal strength, even when barely visible by eye. The ring structure is sharpened considerably in all cases as well. The near-by point sources on the left and right of the spiral arm structure cannot be separated into individual point sources, but remain blurred along the direction of their neighbors. This is a similar situation as in the lower left of the image in the A1 point source scenario, when sources are to close by.
     
-    Combining the data results in the best reconstruction quality. The addition of the lower resolution \enquote{XMM} data does not negatively affect the quality of the overall reconstruction. When comparing Scenario~D5 we see that the \enquote{Chandra} reconstruction shows a very good reconstruction of the spiral structure but shows speckles in the surrounding ring. The latter suggests that the GMM prior is not strong enough to maintain the pixel to pixel correlations in the case of high signal strength. The strength of the prior could be increased with the $\beta$ parameter, but for this study we use the default settings and do not tweak individual parameters. The speckly behaviour is not observed in the \enquote{XMM} case, where the reconstruction of the ring is smoother. In this case the correlation between pixels that are further apart is stronger because of the larger correlation PSF. However, the reconstruction of the spiral structure in the center shows visual artifacts, with the individual arms not completely separated. The joint reconstruction shows the positive qualities of both individual reconstructions. This confirms the results from \cite{Ingaramo2014}, where the authors found that combining multiple measurements for deconvolution with RL to be a \textquote{general tool for combining images with complementary strengths}.
+    Combining the data results in the best reconstruction quality. The addition of the lower resolution \enquote{XMM} data does not negatively affect the quality of the overall reconstruction. When comparing Scenario~D5 we see that the \enquote{Chandra} reconstruction shows a very good reconstruction of the spiral structure but shows speckles in the surrounding ring. The latter suggests that the GMM prior is not strong enough to maintain the pixel to pixel correlations in the case of high signal strength. This observation is confirmed in the metrics shown in Table~\ref{tab:metrics-bkg}, where scenario D5 shows lower SSI values than D4 for the same background level. The strength of the prior could be increased with the $\beta$ parameter, but for this study we use the default settings and do not tweak individual parameters. The speckly behaviour is not observed in the \enquote{XMM} case, where the reconstruction of the ring is smoother. In this case the correlation between pixels that are further apart is stronger because of the larger correlation PSF. However, the reconstruction of the spiral structure in the center shows visual artifacts, with the individual arms not completely separated. The joint reconstruction shows the positive qualities of both individual reconstructions. This confirms the results from \cite{Ingaramo2014}, where the authors found that combining multiple measurements for deconvolution with RL to be a \textquote{general tool for combining images with complementary strengths}.
 
     \section{Application Examples}
     %
@@ -494,15 +510,16 @@
     
     \textbf{Zoom A} of Figure~\ref{fig:example-chandra} details an example of a filament structure. \jolideco maintains the extended structure along the filament, while sharpening in the perpendicular direction. Looking at the upper right corner one can also see that weak background emission is suppressed, improving the contrast of the image.
     
-    \textbf{Zoom B} shows the region around the putative central compact object of the SNR (\cite{Vogt2018}, \cite{Hebbar2020}, but \cite{Long2020}). While the emission is barely visible in the counts image it is clearly evident above the background in the \jolideco reconstruction. Visually the reconstruction does not result in a point source, but leaves a visible extension of a very few pixels.
+    \textbf{Zoom B} shows the region around the putative central compact object of the SNR (\cite{Vogt2018}, \cite{Hebbar2020}, but \cite{Long2020}). While the emission is barely visible in the counts image it is clearly evident above the background in the \jolideco reconstruction. Visually the reconstruction does not result in a point source, but leaves a visible extension of a few pixels.
     
-    However, at this level of analysis and signal to noise, both scenarios remain plausible: a real intrinsic extension of the feature, as well as a remaining reconstructed extension in a real point source because of low signal to noise, which has also been observed on the simulated point source dataset discussed in Section~\ref{subsec:test-datasets}\footnote{We note that, as illustrated in Section~\ref{subsec:methods} for Scenario~A, the remaining extension of the point source after deconvolution may be smaller if the source is brighter.}.
+    However, at this level of analysis and signal to noise, both scenarios remain plausible: a real intrinsic extension of the feature, or a real point source with a residual extension in its reconstruction, owing to the low signal to noise. We observed the second possibility in
+    the simulated point source dataset discussed in Section~\ref{subsec:test-datasets}\footnote{We note that, as illustrated in Section~\ref{subsec:methods} for Scenario~A, the remaining extension of the point source after deconvolution may be smaller if the source is brighter.}.
     
     To draw stronger scientific conclusions a dedicated analysis of the region, including a simulation of the false detection ratio of point sources would be needed. We estimate the position of the feature by finding the brightest pixel in the map, obtaining $\alpha_{J2000}=01^h04^m02.75^s$ and $\delta_{J2000}=-72^d02^m00.19^s$ which is consistent with the value reported by \cite{Long2020}. This demonstrates an absolute feature position that was reconstructed with \jolideco that is consistent with the existing literature.
     
     \textbf{Zoom C} shows a circular filament structure of the SNR. In the counts data the structure is barely visible, while the \jolideco reconstruction shows a distinct circular structure with a locus of bright emission. This demonstrates the ability of \jolideco to reconstruct sub PSF scale structures with astrophysical relevance.
 
-    Checking the residual images per observation (not shown here), we notice that the assumption of time independence of the source and the instrument response is not completely fulfilled in this case. The detection efficiency of \chandra changed and the sub-structure in the remnant expanded over the time of the observations. Both effects are previously known and have been reported for example in \cite{Xi2019}. Despite the clear improvement in spatial resolution, systematic issues such as the proper-motion of structures and calibration uncertainties, might limit the quality of the result. The full analysis example is available at \url{https://github.com/jolideco/jolideco-chandra-examples}.
+    Checking the residual images per observation (not shown here), we notice that the assumption of time independence of the source and the instrument response is not completely fulfilled in this case. The detection efficiency of \chandra changed and the sub-structure in the remnant expanded over the time of the observations. Both effects are previously known and have been reported for example in \cite{Xi2019}. Despite the clear improvement in spatial resolution, systematic issues such as the proper-motion of structures and calibration uncertainties, might limit the quality of the result. The full analysis example, with results and residuals is available at \url{https://github.com/jolideco/jolideco-chandra-examples}.
 
     \begin{figure*}
         \begin{centering}
@@ -532,16 +549,14 @@
     
     We chose the GMM patch prior learned from \chandra SNRs described in the Section~\ref{sssec:chandra-snrs}. Because of the limited statistics we do not use oversampling but keep the pixel size of the counts image. Figure~\ref{fig:example-fermi-lat} shows the data,  the \jolideco results, and corresponding residuals. The \fermi data is sparse, with limited signal counts. \jolideco clearly improves the noise level as well as angular resolution compared to the data. The calibration parameters of the predicted counts converged to different norms for the background model and positional shifts of order of $<1$ pixel for the different event types. In this way \jolideco corrects for systematic errors in the reconstruction of the position. The reconstruction includes background emission around Vela Junior, indicating that the Galactic diffuse background model is either underestimated in brightness and/or associated with systematic errors. The background estimate could be improved by choosing a larger region of interest. However this would also require a larger effort of modeling nearby sources, which we avoided here.
     
-    To further check the quality of the reconstructed flux we compute a map of standardized residuals defined by:
-
+    To further check the quality of the reconstructed flux we compute a map of smoothed standardized residuals defined by
     \begin{equation}
         \label{eq:approx-sigma}
-        \rho(\mathbf{D}, \boldsymbol{\lambda}) \approx \frac{1}{\sqrt{\pi \sigma^2}}\frac{(\mathbf{D} - \boldsymbol{\lambda}) \circledast g_{\sigma}} {\sqrt{\boldsymbol{\lambda}\circledast g_{\sigma}}}.
+        \rho(\mathbf{D}, \boldsymbol{\lambda}) \approx 2\sqrt{\pi \sigma^2}\frac{(\mathbf{D} - \boldsymbol{\lambda}) \circledast g_{\sigma}} {\sqrt{\boldsymbol{\lambda}\circledast g_{\sigma}}},
     \end{equation}
+    where $\mathbf{D}$ is the measured counts image, $\boldsymbol{\lambda}$ is the expected counts image,  and $g_{\sigma}$ is a Gaussian smoothing kernel (normalized to integrate to unity) with width $\sigma=5$ pixels. We apply the smoothing to enhance possible structures in the sparse data, while the normalisation factor ensures the smoothed residual pixel values are still distributed following a unit Gaussian distribution.
     
-    where $\mathbf{D}$ is the measured counts image, $\boldsymbol{\lambda}$ the predicted counts image  and $g_{\sigma}$ is a Gaussian smoothing kernel of width $\sigma=5$ pixels. The Gaussian smoothing kernel approximates the shape and size of the \fermi PSF. Together with the definition above, the standardized residuals approximately represent the significance of detecting a point source at the given pixel. Structures smaller than the PSF cannot be real.
-
-    The result is shown in the right panel of Figure~\ref{fig:example-fermi-lat}. The image shows no systematic effects and a spatially homogeneous distribution of the residual noise. The resulting distribution of residual significances per pixel is centered at $\mu=-0.001$ with a width of $\sigma=0.991$, indicating a close agreement with a standard normal distribution, as expected for a good model of the emission. In Figure~\ref{fig:example-fermi-lat-non-calibrated} we also show the residuals per PSF class with and without the correction defined by Equation~\ref{eq:model-npred-calibration}. More details of the \fermi analysis are available at \url{https://github.com/jolideco/jolideco-fermi-examples}
+    The result is shown in the right panel of Figure~\ref{fig:example-fermi-lat}. The image shows no systematic effects and a spatially homogeneous distribution of the residual noise. The resulting distribution of residual significances per pixel is centered at $\mu=-0.001$ with a width of $\sigma=0.991$, indicating a close agreement with a standard normal distribution, as expected for a good model of the emission. In Figure~\ref{fig:example-fermi-lat-non-calibrated} we also show the residuals per PSF class with and without the correction defined by Equation~\ref{eq:model-npred-calibration}. More details of the \fermi analysis including results and residuals are available at \url{https://github.com/jolideco/jolideco-fermi-examples}.
     
       \begin{figure*}
         \begin{centering}
@@ -566,33 +581,28 @@
     \section{Summary \& Outlook}
     In this article we presented a new method for deconvolution and denoising of images contaminated by Poisson noise. Using multiple observations of the same sky region the method reconstructs a single flux image using the MAP estimate of the joint posterior distribution under a patch-based image prior. We show that the method leads to improved results compared to existing methods in a variety of morphological, signal to noise, and instrument scenarios. Improvement is especially pronounced for extended sources of a size similar to the PSF. In this case, \jolideco can reliably recover features that are well beyond the angular resolution of the instrument. We also show that the approach of jointly analyzing multiple observations leads to improved reconstruction results. Including data with lower angular resolution in the \jolideco reconstruction improves the fitted correlation structure among pixels across larger distances, while not negatively affecting the overall sharpness of the reconstruction.
 
-    We imagine that \jolideco is the first step of a larger project building ML-inspired methods for the reconstruction of astronomical images that are dominated by Poisson noise. While \jolideco has already achieved results that are superior to any other existing method, it still has significant potential for future extension and improvements.
+    We imagine that \jolideco is the first step of a larger project building ML-inspired methods for the reconstruction of astronomical images that are dominated by Poisson noise. While \jolideco has already demonstrated excellent reconstruction quality in multiple scenarios, it still has significant potential for future extension and improvements.
     
     The first category of future improvements is related to the prior handling. For example, more general mixture models such as the Student-t or a generalised Gaussian mixture model can be used to model the distribution of patches. \citet{VanDenOord2014} shows that these more flexible models can account for the tails of the patch distribution and lead to improved results on natural images. We expect these improvements to transfer to astronomical images.
 
     To allow the patch-based prior distribution to capture correlations at larger scales,
     \cite{Papyan2015} proposed to combine patches extracted at multiple scales of the image when training the GMM. This is a promising approach to further improve the reconstruction quality for extended sources with low signal to noise ratios.
     
-    Working in the context of computer tomographic image reconstruction, \cite{Altekrueger2022} used normalising flows (NF) in their formulation of the patch prior in order to further improve the general expressiveness of the prior. As with a GMM, we can evaluate the NF-based prior distribution and thus construct an explicit posterior distribution for optimization and computation of the MAP estimate. \citet{Ulyanov2017} introduced another promising prior distribution, known as the \enquote{Deep Image Prior} and showed that prior structure for an image can be built into a deep neural network as an \enquote{inductive bias}, where the architecture of the network encodes the prior information on the correlation structure among neighbouring pixels. The authors showed, that the deep image prior successfully imposes self similarity on structures in the image. As structures in astronomical images often show sell-similarity this is an interesting approach, that in principle could be combined with the patch prior.
+    Working in the context of computer tomographic image reconstruction, \cite{Altekrueger2022} used normalising flows (NF) in their formulation of the patch prior in order to further improve the general expressiveness of the prior. As with a GMM, we can evaluate the NF-based prior distribution and thus construct an explicit posterior distribution for optimization and computation of the MAP estimate. \citet{Ulyanov2017} introduced another promising prior distribution, known as the \enquote{Deep Image Prior} and showed that prior structure for an image can be built into a deep neural network as an \enquote{inductive bias}, where the architecture of the network encodes the prior information on the correlation structure among neighboring pixels. The authors showed, that the deep image prior successfully imposes self similarity on structures in the image. As structures in astronomical images often show sell-similarity this is an interesting approach, that in principle could be combined with the patch prior.
 
-    A second category of improvement to \jolideco is generalizing it to jointly model the energy and spatial domains, thus enabling hyperspectral image reconstruction. Instruments such as \fermi combine instrument responses that vary strongly with energy along with a limited overall energy resolution. This configuration introduces correlations between images in neighbouring energy bands. Accounting for energy data in the reconstruction would allow us to handle these correlations and also open up the possibility of merging multiple \xray datasets in the joint spectral/spatial domain,  thus improving both  angular and energy resolution. 
+    A second category of improvement to \jolideco is generalizing it to jointly model the energy and spatial domains, thus enabling hyperspectral image reconstruction. Instruments such as \fermi combine instrument responses that vary strongly with energy along with a limited overall energy resolution. This configuration introduces correlations between images in neighboring energy bands. Accounting for energy data in the reconstruction would allow us to handle these correlations and also open up the possibility of merging multiple \xray datasets in the joint spectral/spatial domain,  thus improving both  angular and energy resolution. 
 
-    \jolideco can already handle an independent background component. However we plan to extend \jolideco to enable it to handle multiple source components at the same time. This allows us in principle, as shown by \cite{Selig2015} and \citet{Pumpe2018} to separate extended sources from point-like sources, based on different prior assumptions on the spatial correlation and distribution of pixels for each model component. 
+    \jolideco can already handle an independent background component. However we plan to extend \jolideco to enable it to handle multiple source components at the same time. This allows us in principle, as shown by \cite{Selig2015A} and \citet{Pumpe2018} to separate extended sources from point-like sources, based on different prior assumptions on the spatial correlation and distribution of pixels for each model component. 
 
-    A last category of improvement to \jolideco is computing principled error estimates for the reconstruction. In this paper, we use bootstrap methods. Since we can compute the full posterior distribution, however, we could build an approximation to the covariance matrix of the MAP estimate, for example, by using a low-rank or sparse representation.
-    Alternatively we can use MCMC to obtain a sampling from the full posterior distribution, enabling us to explore the distribution and quantify  uncertainty both in the parameters and functions of the parameters constructed to represent structures in the image. 
-    Estimating errors for the reconstruction would also include propagating systematic uncertainties on the PSF to the reconstructed image and handling a PSF that varies across the field of view, as recently proposed by \cite{Sakai2023}.    
+    A last category of improvement to \jolideco is computing principled error estimates for the reconstruction. In this paper, we use bootstrap methods. Since we can compute the full posterior distribution, however, we could build an approximation to the covariance matrix of the MAP estimate, for example, by using a low-rank or sparse representation. Alternatively we can use MCMC to obtain a sample from the full posterior distribution, enabling us to explore the distribution and quantify  uncertainty both in the parameters and functions of the parameters constructed to represent structures in the image. Estimating errors for the reconstruction would also include propagating systematic uncertainties on the PSF to the reconstructed image and handling a PSF that varies across the field of view, as recently proposed by \cite{Sakai2023}.    
     
     Finally we invite the community of X-ray and \gammaray astronomers to use  \jolideco to combine datasets and make new scientific discoveries, beyond what is possible with the angular resolution of existing instruments. We also welcome contributions and feedback to the public \jolideco code and validation repositories. 
 
-    \section*{Acknowledgements}
-    This work was conducted under the auspices of the CHASC International Astrostatistics Center.
-    CHASC is supported by NSF grants DMS-21-13615, DMS-21-13397, and DMS-21-13605; by the UK Engineering
-    and Physical Sciences Research Council [EP/W015080/1]; and by NASA APRA Grant 80-NSSC21-K0285.
+    \section*{Acknowledgements}    
+    This work was conducted under the auspices of the CHASC International Astrostatistics Center. CHASC is supported by NSF grants DMS-21-13615, DMS-21-13397, and DMS-21-13605; by the UK Engineering and Physical Sciences Research Council [EP/W015080/1]; and by NASA APRA Grant 80-NSSC21-K0285.
     
     We thank CHASC members for many helpful discussions, especially Xiao-Li Meng and Katy McKeough.
-    DvD was also supported in part by a Marie-Skodowska-Curie RISE Grant (H2020-MSCA-RISE-2019-873089)
-    provided by the European Commission.
+    DvD was also supported in part by a Marie-Skodowska-Curie RISE Grant (H2020-MSCA-RISE-2019-873089) provided by the European Commission.
     
     Aneta Siemiginowska, Vinay Kashyap, and Douglas Burke further acknowledge support from NASA
     contract to the Chandra X-ray Center NAS8-03060.
@@ -600,7 +610,7 @@
     Some of the computations in this paper were conducted on the Smithsonian High Performance
     Cluster (SI/HPC), Smithsonian Institution \url{https://doi.org/10.25572/SIHPC}.
 
-    This research has made use of data obtained from the Chandra Data Archive and software provided by the Chandra X-ray Center (CXC) in the application packages CIAO \citep{Fruscione2006} and {\it Sherpa} \citep{Freeman2001,Burke2022}.
+    This research has made use of data obtained from the Chandra Data Archive, contained in~\dataset[DOI: 10.25574/cdc.244]{https://doi.org/10.25574/cdc.244}. This research also made use of software provided by the Chandra X-ray Center (CXC) in the application packages CIAO \citep{Fruscione2006} and {\it Sherpa} \citep{Freeman2001,Burke2022}.
     
     \newpage
     \bibliography{bib.bib}
@@ -656,9 +666,9 @@
         \begin{tabular}{ c c c c c }
             \input{output/chandra-obs-table.tex}
         \end{tabular}
-        \label{tab:chandra_obs}
         \script{chandra-obs-table.py}
         \caption{Observation list and details from the \chandra \textit{1E~0102.2–7219} example analysis in Section~\ref{sec:chandra-example}. The relative exposure columns list the exposure for each observation expressed as the ratio with the exposure of the reference observation with obs ID 8365. The fractional exposure column, gives the exposure of each observation as a fraction of the total exposure.}
+        \label{tab:chandra_obs}
     \end{table}
 
      \begin{figure*}
